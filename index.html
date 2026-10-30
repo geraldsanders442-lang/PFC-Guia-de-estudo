@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f5f1">
+<title>Guia de Estudos · Escape.py</title>
+<style>
+:root{color-scheme:light;--bg:#f6f5f1;--paper:#fff;--ink:#252821;--muted:#656a60;--line:#e3e2da;--soft:#eeeee7;--accent:#315b47;--accent-2:#e7eee9;--gold:#9b7131;--code:#202722;--code-ink:#e9f0e8;--shadow:0 8px 28px #2528210d;--sidebar:290px;--sans:Inter,"Segoe UI",Arial,sans-serif;--serif:Georgia,"Times New Roman",serif;--mono:"Cascadia Code",Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans)}a{color:var(--accent)}button,input{font:inherit}button{cursor:pointer}::selection{background:#c8d8cc;color:#1b2a20}.layout{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);padding:22px 18px 28px;background:var(--paper);border-right:1px solid var(--line);overflow:auto;z-index:30}.brand{display:flex;gap:11px;align-items:center;padding:4px 8px 21px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}.brand-mark{width:36px;height:36px;display:grid;place-items:center;border:1px solid #b9c8bc;color:var(--accent);font-family:var(--serif);font-size:21px}.brand strong{display:block;font:600 14px var(--sans);letter-spacing:.01em}.brand small{display:block;color:var(--muted);font-size:11px}.nav-search{width:100%;margin:17px 0 18px;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:7px;color:var(--ink);outline:0}.nav-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px #315b471a}.nav-group{margin:16px 0}.nav-title{padding:0 9px;margin:0 0 6px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.nav-list{display:grid;gap:2px}.nav-list a{padding:6px 9px;border-radius:5px;text-decoration:none;font-size:13px;color:var(--muted);line-height:1.35}.nav-list a:hover,.nav-list a.active{background:var(--accent-2);color:var(--accent)}.nav-list a.active{font-weight:650}.side-foot{margin:24px 8px 0;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}.main{margin-left:var(--sidebar);min-height:100vh}.topbar{height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 clamp(18px,4vw,56px);background:color-mix(in srgb,var(--bg),transparent 6%);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}.crumb{font-size:12px;color:var(--muted)}.top-actions{display:flex;gap:8px}.icon-button,.menu-button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;padding:7px 10px;font-size:12px}.menu-button{display:none}.content{max-width:1040px;margin:0 auto;padding:42px clamp(18px,4vw,58px) 90px}.intro{padding:24px 0 34px;border-bottom:1px solid var(--line)}.eyebrow{color:var(--accent);font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:700}.intro h1{max-width:760px;margin:10px 0 14px;font:500 clamp(36px,5vw,62px)/1.04 var(--serif);letter-spacing:-.035em}.intro p{max-width:740px;color:var(--muted);font-size:17px}.intro-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.tag{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:4px 10px;font-size:11px;color:var(--muted)}.note{margin:20px 0;padding:14px 16px;border:1px solid #d3dccf;background:var(--accent-2);border-radius:7px;color:var(--ink);font-size:13px}.note strong{color:var(--accent)}.section{padding:37px 0 8px;scroll-margin-top:72px}.section-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px}.section-number{flex:none;width:30px;height:30px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;font-size:11px;color:var(--accent)}h2{margin:0;font:500 30px/1.17 var(--serif);letter-spacing:-.02em}h3{margin:23px 0 8px;font-size:17px;line-height:1.35}h4{margin:15px 0 5px;font-size:14px}p{margin:8px 0 12px}.lede{max-width:760px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}.panel{min-width:0;padding:17px 18px;background:var(--paper);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}.panel h3:first-child{margin-top:0}.panel p:last-child{margin-bottom:0}.panel .kicker{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:20px 0}.flow-step{min-height:96px;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:7px}.flow-step b{display:block;font-size:12px;color:var(--accent);margin-bottom:5px}.flow-step span{display:block;font-size:11px;color:var(--muted);line-height:1.45}.table-wrap{overflow:auto;margin:16px 0;border:1px solid var(--line);border-radius:8px;background:var(--paper)}table{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}th,td{text-align:left;vertical-align:top;padding:11px 13px;border-bottom:1px solid var(--line)}th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--soft)}tr:last-child td{border-bottom:0}td code, p code, li code{font: .88em var(--mono);color:var(--accent);background:var(--accent-2);padding:2px 5px;border-radius:4px}.codebox{position:relative;margin:13px 0 18px;border-radius:8px;overflow:hidden;background:var(--code);color:var(--code-ink)}.code-label{padding:8px 13px;color:#afc2b1;border-bottom:1px solid #ffffff1c;font:10px var(--mono);letter-spacing:.04em}.copy{position:absolute;right:9px;top:6px;padding:4px 8px;border:1px solid #ffffff30;border-radius:4px;background:transparent;color:#dce9de;font-size:10px}.copy:hover{background:#ffffff12}pre{margin:0;padding:14px 16px 17px;overflow:auto;font:12px/1.65 var(--mono);tab-size:2}pre code{color:inherit;background:none;padding:0;border-radius:0}.token-comment{color:#91a395}.token-key{color:#c6d99a}.token-string{color:#e5bc8b}.small{font-size:12px;color:var(--muted)}.qa-list{display:grid;gap:8px;margin:14px 0}.qa{border:1px solid var(--line);border-radius:7px;background:var(--paper);overflow:hidden}.qa summary{position:relative;list-style:none;padding:13px 42px 13px 15px;font-size:13px;font-weight:600;cursor:pointer}.qa summary::-webkit-details-marker{display:none}.qa summary:after{content:"+";position:absolute;right:16px;top:10px;color:var(--accent);font-size:19px;font-weight:400}.qa[open] summary:after{content:"−"}.qa .answer{padding:0 15px 14px;color:var(--muted);font-size:13px}.qa .answer p:last-child{margin-bottom:0}.checklist{list-style:none;padding:0;margin:12px 0}.checklist li{position:relative;padding:5px 0 5px 23px;font-size:13px}.checklist li:before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700}.mini-label{display:inline-block;padding:2px 6px;border-radius:3px;background:var(--soft);color:var(--muted);font:10px var(--mono)}.back-top{display:inline-block;margin-top:14px;text-decoration:none;font-size:12px}.footer{margin-top:55px;padding-top:18px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}.hidden-search{display:none!important}.no-results{display:none;margin:20px 0;padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:8px;color:var(--muted)}.toc-highlight{animation:highlight 1.2s ease-out}@keyframes highlight{0%{background:#e7eee9}100%{background:transparent}}:focus-visible{outline:3px solid #7c9d85;outline-offset:2px}
+html[data-tema="escuro"]{color-scheme:dark;--bg:#171b18;--paper:#202622;--ink:#e8ece7;--muted:#adb6ad;--line:#353e37;--soft:#29322c;--accent:#a6c5ad;--accent-2:#29372e;--gold:#d2b57f;--code:#111613;--code-ink:#e9f0e8;--shadow:0 8px 28px #0002}html[data-tema="escuro"] .note{border-color:#415a48}html[data-tema="escuro"] .section-number{color:var(--accent)}
+@media(max-width:960px){:root{--sidebar:260px}.flow{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.sidebar{transform:translateX(-105%);transition:transform .22s ease;width:min(84vw,310px);box-shadow:var(--shadow)}body.menu-open .sidebar{transform:translateX(0)}body.menu-open:after{content:"";position:fixed;inset:0;background:#1118;z-index:25}.main{margin-left:0}.menu-button{display:inline-block}.topbar{padding:0 14px}.content{padding:27px 18px 65px}.intro{padding-top:15px}.intro h1{font-size:43px}.intro p{font-size:15px}.grid{grid-template-columns:1fr}.flow{grid-template-columns:repeat(2,minmax(0,1fr))}.flow-step{min-height:80px}.section{padding-top:29px}h2{font-size:27px}.topbar .crumb{font-size:11px}}
+@media(max-width:390px){.intro h1{font-size:36px}.flow{grid-template-columns:1fr}.top-actions{gap:5px}.icon-button,.menu-button{padding:7px 8px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+@media print{.sidebar,.topbar,.copy,.back-top{display:none!important}.main{margin:0}.content{max-width:none;padding:0}.section{break-inside:avoid}.qa{break-inside:avoid}body{background:#fff;color:#111}.panel,.qa,.table-wrap{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar" aria-label="Navegação do guia">
+  <a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true">E</span><span><strong>Escape.py</strong><small>Guia de estudos do projeto</small></span></a>
+  <label class="small" for="busca" style="display:block;margin-top:14px">Encontre um tópico</label>
+  <input id="busca" class="nav-search" type="search" placeholder="Ex.: JWT, Pyodide, API…" autocomplete="off">
+  <nav id="navegacao">
+    <div class="nav-group"><p class="nav-title">Comece aqui</p><div class="nav-list"><a href="#visao-geral">Visão geral</a><a href="#arquitetura">Como as partes conversam</a><a href="#estrutura">Estrutura do projeto</a></div></div>
+    <div class="nav-group"><p class="nav-title">Aprenda a base</p><div class="nav-list"><a href="#linguagens">Linguagens e como funcionam</a><a href="#aprenda-js">JavaScript do zero</a><a href="#aprenda-backend">Back-end do zero</a><a href="#rastreio">Rastreando uma requisição</a></div></div>
+    <div class="nav-group"><p class="nav-title">Fundamentos web</p><div class="nav-list"><a href="#html">HTML5 e acessibilidade</a><a href="#css">CSS3 e responsividade</a><a href="#javascript">JavaScript no projeto</a><a href="#esmodules">ES Modules e organização</a><a href="#http-api">HTTP, JSON e API REST</a></div></div>
+    <div class="nav-group"><p class="nav-title">Front-end do jogo</p><div class="nav-list"><a href="#frontend-arquitetura">Páginas e componentes</a><a href="#partida">Lógica da partida</a><a href="#python-browser">Python, Pyodide e Worker</a><a href="#bibliotecas-web">Bootstrap, Lucide e DiceBear</a><a href="#tempo-real">Tempo real com SSE</a></div></div>
+    <div class="nav-group"><p class="nav-title">Back-end e dados</p><div class="nav-list"><a href="#node-express">Node.js e Express</a><a href="#camadas">Rotas, controllers e services</a><a href="#mongodb">MongoDB Atlas</a><a href="#auth-seguranca">Autenticação e segurança</a><a href="#email">E-mail, Brevo e migração</a></div></div>
+    <div class="nav-group"><p class="nav-title">Entrega e avaliação</p><div class="nav-list"><a href="#testes">Testes automatizados</a><a href="#deploy">Deploy e configuração</a><a href="#ferramentas">Ferramentas e metodologia</a><a href="#estado-atual">O que está pronto / pontos de atenção</a><a href="#perguntas">Perguntas da banca</a><a href="#glossario">Glossário rápido</a></div></div>
+  </nav>
+  <div class="side-foot">Material de estudo baseado nos arquivos atuais do repositório. Revise com a equipe antes da apresentação.</div>
+</aside>
+<main class="main" id="inicio">
+  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="menu-button" id="menu-toggle" aria-label="Abrir navegação" aria-expanded="false">☰</button><span class="crumb">Documentação / Guia para a banca</span></div><div class="top-actions"><button class="icon-button" id="tema-toggle" type="button" aria-label="Alternar tema">Tema: claro</button><button class="icon-button" type="button" onclick="window.print()">Imprimir / PDF</button></div></header>
+  <article class="content">
+    <header class="intro">
+      <span class="eyebrow">Guia rápido · leitura de estudo</span>
+      <h1>Entenda o Escape.py, da tela ao servidor.</h1>
+      <p>Uma explicação direta da arquitetura e das tecnologias do Projeto Final de Curso: o que cada peça faz, como ela funciona e por que aparece neste jogo educacional de programação.</p>
+      <div class="intro-tags"><span class="tag">HTML · CSS · JavaScript</span><span class="tag">Python no navegador</span><span class="tag">Node.js · Express</span><span class="tag">MongoDB · SSE</span><span class="tag">Perguntas para a banca</span></div>
+    </header>
+    <div class="note"><strong>Importante:</strong> este guia foi escrito em português brasileiro e baseado no código/README da pasta do projeto. O documento acadêmico inicial descreve uma proposta anterior com Firebase; a versão atual tem API própria em Node/Express e MongoDB. Consulte <code>versao-1-etapa1/README.md</code> como referência do estado implementado e use a seção <a href="#estado-atual">“O que está pronto”</a> para explicar as diferenças com cuidado.</div>
+    <div class="no-results" id="sem-resultados">Nenhum tópico corresponde à busca. Tente outro termo.</div>
+
+    <section class="section" id="visao-geral" data-title="Visão geral">
+      <div class="section-head"><span class="section-number">01</span><div><h2>Visão geral</h2><p class="lede">O que o sistema faz antes de falar de ferramentas.</p></div></div>
+      <p>O <strong>Escape.py</strong> é um jogo web educacional no formato Escape Room. A equipe explora uma sala, encontra pistas e resolve enigmas escrevendo funções em <strong>Python</strong>. A meta pedagógica é praticar lógica, leitura de problemas, testes e colaboração.</p>
+      <div class="grid">
+        <div class="panel"><span class="kicker">Experiência do jogador</span><h3>Explorar → descobrir → programar</h3><p>O jogador entra na conta, participa de um grupo, navega por cenários com objetos clicáveis, lê pistas no caderno compartilhado e abre um editor de código para resolver os mecanismos.</p></div>
+        <div class="panel"><span class="kicker">Uma divisão importante</span><h3>Python é o conteúdo, JavaScript é a aplicação</h3><p>O site e sua lógica são escritos principalmente em JavaScript. O código Python digitado pelos estudantes é executado dentro do navegador pelo Pyodide; não é o servidor Node que executa esse Python.</p></div>
+      </div>
+      <h3>Partida em cinco passos</h3>
+      <div class="flow" aria-label="Fluxo resumido da partida"><div class="flow-step"><b>1 · Identidade</b><span>Cadastro, verificação de e-mail e perfil.</span></div><div class="flow-step"><b>2 · Equipe</b><span>Grupos, participantes, convites e chat.</span></div><div class="flow-step"><b>3 · Preparação</b><span>O proprietário escolhe a dificuldade e cria a configuração.</span></div><div class="flow-step"><b>4 · Desafio</b><span>Pistas liberam enigmas; Python é testado localmente no browser.</span></div><div class="flow-step"><b>5 · Resultado</b><span>O back-end registra progresso, tempo e pontuação.</span></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Dificuldade</th><th>Tempo definido pelo servidor</th><th>Quantidade de enigmas</th></tr></thead><tbody><tr><td>Fácil</td><td>25 minutos</td><td>3</td></tr><tr><td>Médio</td><td>45 minutos</td><td>4</td></tr><tr><td>Difícil</td><td>60 minutos</td><td>5</td></tr></tbody></table></div>
+    </section>
+
+    <section class="section" id="arquitetura" data-title="Como as partes conversam">
+      <div class="section-head"><span class="section-number">02</span><div><h2>Como as partes conversam</h2><p class="lede">Uma aplicação web em três camadas, com um canal adicional de notificações em tempo real.</p></div></div>
+      <div class="flow" style="grid-template-columns:repeat(4,minmax(0,1fr))"><div class="flow-step"><b>1 · Navegador</b><span>HTML, CSS e módulos JavaScript. Mostra telas e envia ações pela API.</span></div><div class="flow-step"><b>2 · API REST</b><span>Node.js + Express autenticam, validam e aplicam regras de negócio.</span></div><div class="flow-step"><b>3 · Banco</b><span>MongoDB Atlas guarda contas, grupos, convites, mensagens e partidas.</span></div><div class="flow-step"><b>Canal SSE</b><span>O servidor avisa que algo mudou; o front faz novo GET para buscar o estado atual.</span></div></div>
+      <p>O navegador não se conecta diretamente ao MongoDB. Ele chama endpoints como <code>GET /api/groups</code> ou <code>POST /api/games/{id}/start</code>. O servidor verifica quem está chamando e se aquela operação é permitida, então consulta ou atualiza a base e devolve JSON.</p>
+      <div class="codebox"><div class="code-label">Fluxo conceitual · não é uma chamada única de código</div><button class="copy" type="button">Copiar</button><pre><code>Navegador → HTTPS + JSON → API Express → MongoDB Atlas
+Navegador ← resposta JSON ← API Express ← consulta/gravação
+Navegador ← aviso SSE ("partida mudou") ← API Express
+Navegador → GET novamente → API Express → estado mais recente</code></pre></div>
+      <p class="small">SSE não transmite, por si só, o estado completo do jogo. O evento informa qual canal mudou; em seguida, o cliente consulta a API. Esse desenho evita usar a notificação como fonte final dos dados.</p>
+    </section>
+
+    <section class="section" id="estrutura" data-title="Estrutura do projeto">
+      <div class="section-head"><span class="section-number">03</span><div><h2>Estrutura do projeto</h2><p class="lede">Saiba onde procurar a implementação antes de apresentar uma funcionalidade.</p></div></div>
+      <div class="codebox"><div class="code-label">Mapa reduzido · pastas que aparecem na versão atual</div><button class="copy" type="button">Copiar</button><pre><code>versao-1-etapa1/
+├── *.html                 páginas e estrutura semântica
+├── css/                   estilos globais e da sala
+├── assets/                renders e JSON da sala
+├── js/
+│   ├── main.js            escolhe a classe de cada página
+│   ├── paginas/           fluxo de cada tela
+│   ├── componentes/       interface reutilizável
+│   ├── servicos/          chamadas à API e regras de jogo
+│   ├── modelos/           entidades e estado do domínio
+│   └── nucleo/            API, SSE, Python, DOM, cronômetro
+└── backend/
+    ├── src/routes/        caminhos HTTP
+    ├── src/controllers/   entrada/saída HTTP
+    ├── src/services/      regras de negócio e persistência
+    ├── src/middleware/    autenticação, limites e erros
+    ├── src/config/        ambiente e conexão MongoDB
+    └── test/              testes automatizados</code></pre></div>
+      <p>Um exemplo de navegação pelo código: <code>sala.html</code> define <code>data-pagina="sala"</code>; <code>js/main.js</code> carrega dinamicamente <code>PaginaSala.js</code>; essa página usa componentes, modelos e serviços. O serviço fala com <code>Api.js</code>, que chama o back-end.</p>
+      <div class="note"><strong>Arquivos legados:</strong> o README identifica alguns arquivos soltos antigos — por exemplo <code>js/firebase.js</code>, <code>js/login.js</code> e <code>js/nucleo/Firebase.js</code> — como não carregados pelas páginas atuais. Não os use para descrever o fluxo atual sem confirmar o HTML/imports.</div>
+    </section>
+
+    <section class="section" id="html" data-title="HTML5 e acessibilidade">
+      <div class="section-head"><span class="section-number">04</span><div><h2>HTML5 e acessibilidade</h2><p class="lede">HTML define a estrutura e o significado do conteúdo; não é a linguagem que processa as regras do jogo.</p></div></div>
+      <p>O HTML descreve elementos como cabeçalhos, formulários, botões, links, áreas principais e painéis. Elementos semânticos ajudam leitores de tela, navegação por teclado, mecanismos de busca e manutenção do código.</p>
+      <div class="codebox"><div class="code-label">Exemplo real adaptado de sala.html</div><button class="copy" type="button">Copiar</button><pre><code>&lt;body data-pagina="sala"&gt;
+  &lt;main class="ph-shell"&gt;
+    &lt;section id="vista-jogo" hidden&gt;
+      &lt;div id="palco"&gt;&lt;/div&gt;
+    &lt;/section&gt;
+    &lt;aside aria-label="Caderno e chat"&gt;
+      &lt;div id="caderno"&gt;&lt;/div&gt;
+      &lt;div id="chat-sala"&gt;&lt;/div&gt;
+    &lt;/aside&gt;
+  &lt;/main&gt;
+  &lt;script type="module" src="js/main.js"&gt;&lt;/script&gt;
+&lt;/body&gt;</code></pre></div>
+      <p><code>data-pagina</code> é um atributo de dados personalizado. O JavaScript o lê para inicializar a classe de tela. O atributo <code>hidden</code> esconde as vistas que não estão ativas; IDs como <code>palco</code> viram pontos de montagem dos componentes.</p>
+      <h3>Por que HTML semântico?</h3><p>É mais claro para pessoas e tecnologia assistiva: <code>&lt;button&gt;</code> é acionável, <code>&lt;nav&gt;</code> é navegação, <code>&lt;main&gt;</code> é conteúdo principal. É melhor que transformar qualquer <code>&lt;div&gt;</code> em controle clicável.</p>
+    </section>
+
+    <section class="section" id="css" data-title="CSS3 e responsividade">
+      <div class="section-head"><span class="section-number">05</span><div><h2>CSS3 e responsividade</h2><p class="lede">CSS controla apresentação, posicionamento e adaptação a diferentes telas.</p></div></div>
+      <p>No projeto, há estilos globais em <code>css/style.css</code> e regras específicas da sala em <code>css/sala.css</code>. A tela do jogo usa grid para separar área de exploração e painel lateral; uma media query transforma o arranjo em uma coluna em telas menores.</p>
+      <div class="codebox"><div class="code-label">Padrão que existe em css/sala.css</div><button class="copy" type="button">Copiar</button><pre><code>.sala-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 18px;
+}
+
+@media (max-width: 1100px) {
+  .sala-layout { grid-template-columns: 1fr; }
+}</code></pre></div>
+      <p><code>minmax(0, 1fr)</code> permite que a área principal encolha sem estourar a grade. A media query aplica outro layout quando a largura disponível cai. Unidades relativas, conteúdo fluido e áreas de toque razoáveis são importantes para telefone. A folha da sala também preserva um palco em proporção <code>16 / 9</code>.</p>
+      <div class="panel"><h3>Como explicar a separação</h3><p>HTML organiza o que existe; CSS decide como aparece; JavaScript muda os dados e reage a ações. Separar as responsabilidades torna mais fácil ajustar o visual sem reescrever a regra do jogo.</p></div>
+    </section>
+
+    <section class="section" id="javascript" data-title="JavaScript no projeto">
+      <div class="section-head"><span class="section-number">06</span><div><h2>JavaScript no projeto</h2><p class="lede">JavaScript liga as interações da interface, os serviços web e a lógica executada no navegador.</p></div></div>
+      <p>O código da interface está organizado em classes e módulos ES. JavaScript usa funções, objetos, classes, arrays, mapas, eventos e Promises. Operações de rede e algumas regras são assíncronas: a palavra-chave <code>await</code> espera uma Promise sem congelar toda a interface.</p>
+      <div class="codebox"><div class="code-label">Padrão usado no fluxo da partida · versão didática</div><button class="copy" type="button">Copiar</button><pre><code>async function iniciarPartida() {
+  try {
+    await servicoPartida.iniciar(idGrupo);
+    // A API confirmou a ação; o estado atualizado chega pela observação.
+  } catch (erro) {
+    notificador.falha(erro, "Não foi possível iniciar.");
+  }
+}</code></pre></div>
+      <p><code>async</code> faz a função retornar uma Promise. <code>await</code> pausa aquela função até a resposta. <code>try/catch</code> apresenta falhas de rede ou regras negadas de modo controlado.</p>
+      <h3>Como o site atualiza a tela?</h3><p>Eventos DOM, como <code>click</code> e <code>change</code>, chamam métodos; esses métodos consultam serviços e alteram os elementos DOM. Para dados externos, não se deve confiar no que o cliente mostra: a API valida a operação de novo.</p>
+    </section>
+
+    <section class="section" id="esmodules" data-title="ES Modules e organização">
+      <div class="section-head"><span class="section-number">07</span><div><h2>ES Modules e organização</h2><p class="lede">Módulos permitem dividir o programa em arquivos com responsabilidades e dependências explícitas.</p></div></div>
+      <p>As páginas carregam <code>js/main.js</code> como <code>type="module"</code>. O arquivo importa classes com <code>import</code>, expõe itens com <code>export</code> e usa importação dinâmica da página correta. O <code>package.json</code> do back-end define <code>"type":"module"</code>, portanto usa a mesma sintaxe ES Modules no Node.js.</p>
+      <div class="codebox"><div class="code-label">Trecho de js/main.js</div><button class="copy" type="button">Copiar</button><pre><code>const classe = Aplicacao.PAGINAS[document.body.dataset.pagina];
+if (!classe) return;
+const modulo = await import(`./paginas/${classe}.js`);
+await new modulo[classe]().iniciar();</code></pre></div>
+      <p>Essa importação tardia carrega a classe necessária para a página atual, em vez de inicializar toda tela possível em todas as páginas. Os nomes de pastas refletem as responsabilidades: <code>paginas</code>, <code>componentes</code>, <code>servicos</code>, <code>modelos</code> e <code>nucleo</code>.</p>
+    </section>
+
+    <section class="section" id="http-api" data-title="HTTP, JSON e API REST">
+      <div class="section-head"><span class="section-number">08</span><div><h2>HTTP, JSON e API REST</h2><p class="lede">Uma API é o contrato que permite ao front solicitar operações ao back-end.</p></div></div>
+      <p>O projeto usa HTTP com recursos organizados em caminhos e métodos: <code>GET</code> consulta, <code>POST</code> cria ou executa ações, <code>PATCH</code> altera parcialmente, <code>PUT</code> substitui/atualiza um recurso e <code>DELETE</code> remove. JSON é o formato dos corpos e respostas. As URLs começam por <code>/api</code>.</p>
+      <div class="table-wrap"><table><thead><tr><th>Exemplo</th><th>O que significa</th><th>Resposta comum</th></tr></thead><tbody><tr><td><code>POST /api/auth/login</code></td><td>Enviar credenciais para autenticar</td><td>JSON com token e dados do usuário</td></tr><tr><td><code>GET /api/groups</code></td><td>Buscar grupos do usuário autenticado</td><td>JSON com lista de grupos</td></tr><tr><td><code>POST /api/games/{id}/start</code></td><td>Pedir para começar uma partida</td><td><code>204</code> se aceito</td></tr><tr><td><code>PATCH /api/users/me</code></td><td>Atualizar campos permitidos do próprio perfil</td><td>JSON atualizado</td></tr></tbody></table></div>
+      <p>Em <code>js/nucleo/Api.js</code>, a camada cliente usa <code>fetch</code>, serializa o corpo com <code>JSON.stringify</code>, adiciona <code>Authorization: Bearer …</code> quando existe sessão e converte erros HTTP em <code>ErroApi</code>.</p>
+      <div class="codebox"><div class="code-label">Requisição simplificada</div><button class="copy" type="button">Copiar</button><pre><code>fetch("/api/groups", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+  },
+  body: JSON.stringify({ name: "Equipe Corvos" })
+});</code></pre></div>
+    </section>
+
+    <section class="section" id="frontend-arquitetura" data-title="Páginas e componentes">
+      <div class="section-head"><span class="section-number">09</span><div><h2>Front-end: páginas, componentes e serviços</h2><p class="lede">O front-end estático apresenta as telas e solicita mudanças ao servidor; não hospeda a base de dados.</p></div></div>
+      <div class="grid"><div class="panel"><h3>Páginas</h3><p><code>js/paginas/</code> coordena o fluxo da tela. <code>PaginaSala</code> carrega grupo e sala, observa estado e escolhe a vista lobby/jogo/resultado.</p></div><div class="panel"><h3>Componentes</h3><p><code>js/componentes/</code> desenha partes reutilizáveis: mesa, chat, caderno, mapa, painéis de enigma e resultado.</p></div><div class="panel"><h3>Serviços</h3><p><code>js/servicos/</code> encapsula chamadas à API. <code>ServicoPartida</code> traduz métodos do domínio para endpoints HTTP.</p></div><div class="panel"><h3>Modelos e núcleo</h3><p><code>modelos/</code> representa estado e entidades. <code>nucleo/</code> oferece API HTTP, cronômetro, SSE, DOM, execução Python e outros utilitários.</p></div></div>
+      <p>Essa separação diminui acoplamento: a página não precisa construir cada detalhe da sala nem montar cada URL de rede. Uma boa resposta de banca identifica que a interface organiza a experiência, mas a autorização e persistência finais são responsabilidade do servidor.</p>
+    </section>
+
+    <section class="section" id="partida" data-title="Lógica da partida">
+      <div class="section-head"><span class="section-number">10</span><div><h2>Lógica do jogo e geração procedural</h2><p class="lede">Uma configuração derivada de semente define a sequência de pistas, enigmas e dependências.</p></div></div>
+      <p><code>GeradorProcedural</code> usa uma semente e a dificuldade para selecionar objetos, modelos de enigma e relações entre etapas. A mesma semente torna possível reproduzir a mesma sequência aleatória derivada, desde que a versão do gerador e as entradas sejam iguais. O gerador valida a configuração e simula a progressão para verificar se o final é alcançável.</p>
+      <div class="codebox"><div class="code-label">Esquema simplificado do fluxo</div><button class="copy" type="button">Copiar</button><pre><code>const semente = Aleatorio.novaSemente();
+const { config } = GeradorProcedural.gerar({ sala, dificuldade, semente });
+await servico.criar(idGrupo, { uid, dificuldade, semente, config });</code></pre></div>
+      <p><code>EstadoPartida</code> modela estados como <code>WAITING</code>, <code>PLAYING</code>, <code>COMPLETED</code>, <code>FAILED</code> e <code>EXPIRED</code>. As transições permitidas são explícitas. O servidor define o horário real de início e expiração; o cronômetro do navegador apenas exibe o tempo sincronizado.</p>
+      <div class="note"><strong>Regra importante:</strong> a validação pedagógica do código Python acontece no navegador; o servidor registra o fato de que uma pista/enigma foi concluído e confere pré-condições, participação, estado, prazo e limites. Não diga que a API executa o código Python dos jogadores.</div>
+      <h3>Hotspots</h3><p>A sala é composta por renders/imagens e uma camada SVG sobreposta. Hotspots são áreas clicáveis associadas a objetos. As coordenadas são normalizadas no JSON da sala, permitindo redimensionar o palco sem depender de um tamanho fixo de imagem. O editor de sala administra essas áreas e a publicação da configuração.</p>
+      <h3>Colaboração</h3><p>Vários participantes podem observar o estado compartilhado. Se alguém encontra pista ou resolve um mecanismo, a API registra e emite um aviso SSE. Os demais clientes então recarregam o estado, atualizam caderno/progresso e mostram feedback.</p>
+    </section>
+
+    <section class="section" id="python-browser" data-title="Python, Pyodide e Worker">
+      <div class="section-head"><span class="section-number">11</span><div><h2>Python, Pyodide e Web Worker</h2><p class="lede">Python é executado no navegador por meio do runtime WebAssembly do Pyodide.</p></div></div>
+      <p><strong>Pyodide</strong> disponibiliza o interpretador Python compilado para WebAssembly. <code>ExecutorPython</code> envia o código para um <strong>Web Worker</strong>, uma thread separada da interface. Assim, enquanto o código roda, a tela principal pode continuar responsiva. O Worker carrega a versão 0.26.4 do Pyodide e aplica testes definidos pelo enigma.</p>
+      <div class="flow" style="grid-template-columns:repeat(4,minmax(0,1fr))"><div class="flow-step"><b>1 · Editor</b><span>Jogador escreve uma função Python.</span></div><div class="flow-step"><b>2 · Mensagem</b><span>JavaScript manda código e identificador ao Worker.</span></div><div class="flow-step"><b>3 · Execução</b><span>Pyodide interpreta e executa os testes de entrada/saída.</span></div><div class="flow-step"><b>4 · Feedback</b><span>Worker devolve resultado; painel mostra erros, saída ou aprovação.</span></div></div>
+      <div class="codebox"><div class="code-label">Interface JavaScript simplificada com Worker</div><button class="copy" type="button">Copiar</button><pre><code>const worker = new Worker("./PyodideWorker.js");
+worker.postMessage({ id, codigo, nomeFuncao, testes, modo: "validar" });
+worker.addEventListener("message", ({ data }) =&gt; {
+  if (data.tipo === "resultado" &amp;&amp; data.id === id) {
+    mostrarResultado(data.resultado);
+  }
+});</code></pre></div>
+      <h3>Testes do enigma</h3><p>O harness Python analisa/compila o texto, executa-o, localiza a função esperada e compara retorno com casos de teste. Ele diferencia erro de sintaxe, erro em execução e falha de teste. Há um limite de 6 segundos para execução; se expirar, o Worker é encerrado e descartado para interromper código travado.</p>
+      <div class="note"><strong>Limite de segurança que vale conhecer:</strong> executar código no navegador isola a interface por Worker e permite terminar a tarefa por tempo, mas não deve ser apresentado como sandbox inviolável contra qualquer abuso. O navegador do estudante é o ambiente de execução; o back-end não valida por conta própria toda semântica do código digitado. Essa é uma decisão e uma limitação técnica a discutir com honestidade.</div>
+      <p>O aluno não envia um programa Python para executar no servidor. O servidor recebe apenas a ação de progresso e seus metadados (por exemplo, dicas/tentativas/pontuação), e aplica validações de domínio e autorização sobre o estado.</p>
+    </section>
+
+    <section class="section" id="bibliotecas-web" data-title="Bootstrap, Lucide e DiceBear">
+      <div class="section-head"><span class="section-number">12</span><div><h2>Bibliotecas e serviços do front-end</h2><p class="lede">Dependências de interface e um serviço externo de avatares.</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Tecnologia</th><th>O que faz</th><th>Uso observado</th><th>Por que ajuda</th></tr></thead><tbody>
+      <tr><td><strong>Bootstrap 5.3.3</strong></td><td>Framework CSS com classes de layout e componentes.</td><td>Carregado por CDN nas páginas HTML; aparecem classes utilitárias como <code>btn</code>, <code>d-flex</code> e <code>gap-2</code>.</td><td>Acelera estilos comuns e facilita layouts consistentes; CSS próprio adapta a identidade do jogo.</td></tr>
+      <tr><td><strong>Lucide</strong></td><td>Conjunto de ícones SVG.</td><td>Script UMD incluído; marcações <code>i data-lucide="..."</code> são transformadas em ícones.</td><td>Ícones vetoriais leves e escaláveis ajudam a reconhecer ações.</td></tr>
+      <tr><td><strong>Google Fonts</strong></td><td>Hospeda fontes para web.</td><td>HTML importa Inter, Space Grotesk e Cinzel.</td><td>Define uma hierarquia tipográfica: sans na interface e serif temática em títulos da sala.</td></tr>
+      <tr><td><strong>DiceBear API 9.x</strong></td><td>Gera avatares SVG a partir de estilo e seed.</td><td><code>js/nucleo/Avatar.js</code> monta URL com estilo validado e semente sanitizada.</td><td>Cria avatar consistente sem equipe desenhar uma imagem por usuário.</td></tr>
+      <tr><td><strong>Pyodide 0.26.4</strong></td><td>Runtime Python em WebAssembly.</td><td>Carregado no Worker a partir do CDN jsDelivr.</td><td>Permite cumprir o objetivo de aprendizagem de Python sem instalar Python no computador do jogador.</td></tr>
+      </tbody></table></div>
+      <p class="small">Esses arquivos externos exigem conexão com a internet e disponibilidade do respectivo CDN/API; o guia em si, ao contrário, não depende de CDN.</p>
+    </section>
+
+    <section class="section" id="tempo-real" data-title="Tempo real com SSE">
+      <div class="section-head"><span class="section-number">13</span><div><h2>Tempo real com Server-Sent Events</h2><p class="lede">SSE é um fluxo persistente unidirecional: servidor → navegador.</p></div></div>
+      <p>A rota <code>GET /api/events</code> mantém uma conexão HTTP aberta com tipo <code>text/event-stream</code>. Quando algo relevante muda, o servidor publica um pequeno evento com o nome do canal: grupo, chat, partida, convite ou presença. O navegador assina os canais usados pela página e, ao receber um aviso, busca de novo o recurso via API REST.</p>
+      <div class="grid"><div class="panel"><h3>Por que SSE?</h3><p>O jogo precisa principalmente que o servidor avise o navegador sobre atualizações. SSE é mais simples que comunicação bidirecional quando o envio de comandos continua acontecendo por HTTP normal.</p></div><div class="panel"><h3>Por que não WebSocket?</h3><p>WebSocket é bidirecional e adequado para troca constante nos dois sentidos. Para este fluxo — enviar ações por REST e receber notificações — SSE reduz complexidade.</p></div></div>
+      <p><code>TempoReal.js</code> implementa conexão, leitura do fluxo, reconexão com espera crescente, e recarga de dados após reconexão para reparar avisos perdidos. O Worker no servidor guarda conexões em memória; por isso o README avisa que o deploy precisa ser de uma instância única para esse recurso consistente.</p>
+      <div class="note"><strong>Distinção para a banca:</strong> eventos SSE avisam “houve mudança”; REST busca “qual é o estado agora”. SSE atual é unidirecional; não é chat de WebSocket. O cliente envia mensagens por endpoints HTTP normais.</div>
+    </section>
+
+    <section class="section" id="node-express" data-title="Node.js e Express">
+      <div class="section-head"><span class="section-number">14</span><div><h2>Node.js e Express</h2><p class="lede">Node executa JavaScript no servidor; Express facilita construir o servidor HTTP e suas rotas.</p></div></div>
+      <p><strong>Node.js</strong> é o runtime que executa JavaScript fora do browser. No projeto, executa a API e scripts de testes. <strong>Express 5</strong> fornece roteamento, middlewares e integração para responder a requisições. A API abre na porta configurada (padrão local 3000) e tem endpoint de saúde <code>/api/health</code>.</p>
+      <div class="codebox"><div class="code-label">Trecho adaptado de backend/src/app.js</div><button class="copy" type="button">Copiar</button><pre><code>const app = express();
+app.use(cors({ origin: validarOrigem }));
+app.use(express.json({ limit: "1mb" }));
+app.use("/api/auth", rotasAutenticacao(limites));
+app.use("/api/groups", rotasGrupos());
+app.use("/api/games", rotasPartidas());
+app.use(tratarErros);</code></pre></div>
+      <p>Um <strong>middleware</strong> é uma função na cadeia de processamento: pode inspecionar a requisição, preencher contexto, bloquear acesso ou passar adiante com <code>next()</code>. A ordem importa: CORS/JSON/limites e rotas são instalados antes do middleware final de erro.</p>
+    </section>
+
+    <section class="section" id="camadas" data-title="Rotas, controllers e services">
+      <div class="section-head"><span class="section-number">15</span><div><h2>Separação do back-end em camadas</h2><p class="lede">Cada camada responde a uma pergunta diferente: qual URL, como falar HTTP, qual regra aplicar?</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Camada</th><th>Responsabilidade</th><th>Exemplo</th></tr></thead><tbody><tr><td>Routes</td><td>Associa método/caminho e middlewares a uma operação.</td><td><code>routes/partidas.js</code></td></tr><tr><td>Middleware</td><td>Autentica, verifica permissões, limita requisições e prepara contexto.</td><td><code>middleware/autenticacao.js</code></td></tr><tr><td>Controller</td><td>Lê dados da requisição, chama service e monta status/resposta HTTP.</td><td><code>controllers/partidasController.js</code></td></tr><tr><td>Service</td><td>Aplica regras de negócio e faz leitura/gravação no MongoDB.</td><td><code>services/partidas.js</code></td></tr><tr><td>Utils / config</td><td>Validações, erros, configuração de ambiente e conexão de banco.</td><td><code>utils/validacao.js</code></td></tr></tbody></table></div>
+      <p>Exemplo de pedido de início de partida: a rota direciona <code>POST /games/:gid/start</code> ao controller; o controller chama <code>iniciarPartida</code>; o service checa se o usuário é dono do grupo e se a partida está em espera; então atualiza estado e datas no MongoDB e emite notificação.</p>
+      <p>Essa divisão permite testar a regra de negócio sem misturar detalhes de HTML e facilita localizar defeitos. Não é uma regra universal de que todo serviço precisa de cinco pastas; é a organização escolhida neste projeto.</p>
+    </section>
+
+    <section class="section" id="mongodb" data-title="MongoDB Atlas">
+      <div class="section-head"><span class="section-number">16</span><div><h2>MongoDB Atlas</h2><p class="lede">Banco de dados orientado a documentos, hospedado como serviço gerenciado.</p></div></div>
+      <p>MongoDB guarda documentos BSON com formato semelhante a JSON em coleções. O projeto usa o driver oficial <code>mongodb</code> em Node.js e conecta ao Atlas no arranque do servidor. Exemplos de coleções: <code>users</code>, <code>groups</code>, <code>games</code>, <code>messages</code>, <code>invites</code>, <code>authTokens</code> e <code>auditLogs</code>.</p>
+      <div class="codebox"><div class="code-label">Conexão real simplificada · backend/src/config/banco.js</div><button class="copy" type="button">Copiar</button><pre><code>const cliente = new MongoClient(uri);
+await cliente.connect();
+const db = cliente.db(nomeDoBanco);
+await db.command({ ping: 1 });
+return { cliente, db };</code></pre></div>
+      <p>Índices aceleram consultas e podem impor unicidade, por exemplo e-mail único. Índices TTL fazem o MongoDB remover documentos expirados (tokens de uso único e mensagens temporárias). Um índice não substitui validação de negócio nem autorização.</p>
+      <h3>Por que manter banco só no servidor?</h3><p>A API centraliza validações, regras de acesso e segredo de conexão. O navegador nunca recebe credenciais do banco. O servidor atualiza estado compartilhado e impede que cada cópia local do front escolha sozinha quem pode avançar uma partida.</p>
+    </section>
+
+    <section class="section" id="auth-seguranca" data-title="Autenticação e segurança">
+      <div class="section-head"><span class="section-number">17</span><div><h2>Autenticação e segurança</h2><p class="lede">Identidade responde “quem é você?”; autorização responde “o que você pode fazer?”.</p></div></div>
+      <div class="grid"><div class="panel"><h3>bcrypt</h3><p>Função de hash de senha com salt e custo computacional ajustável. O sistema guarda um hash (custo configurado como 12), nunca a senha em texto puro. A verificação compara a senha digitada ao hash.</p></div><div class="panel"><h3>JWT</h3><p>JSON Web Token assinado pelo servidor e enviado pelo cliente como token Bearer. O projeto assina com HS256 e inclui id/versionamento de sessão e validade. Assinatura permite detectar alteração; JWT não é automaticamente criptografado.</p></div><div class="panel"><h3>CORS</h3><p>Política de navegador que restringe quais origens podem ler respostas cross-origin. A API compara a origem com <code>FRONTEND_URL</code>. CORS não substitui autenticação nem é uma barreira contra chamadas fora do browser.</p></div><div class="panel"><h3>Rate limiting</h3><p><code>express-rate-limit</code> controla frequência de requisições, especialmente rotas sensíveis, para reduzir abuso e tentativas repetidas. Ele complementa, não substitui, segurança de senha.</p></div></div>
+      <h3>Fluxo resumido de sessão</h3><ol><li>O jogador envia e-mail e senha por HTTPS.</li><li>O servidor verifica a senha com bcrypt e emite JWT de validade limitada.</li><li>O navegador armazena o token no <code>localStorage</code> e anexa <code>Authorization: Bearer …</code> às chamadas.</li><li>Middleware verifica assinatura/expiração, busca usuário no banco e compara versão da sessão.</li><li>Middlewares específicos exigem e-mail verificado, perfil completo ou papel de administrador, conforme a rota.</li></ol>
+      <div class="note"><strong>Decisão e risco:</strong> o README explica que o JWT foi colocado em <code>localStorage</code> para suportar front e back em domínios distintos. JavaScript acessível na página também pode ler esse armazenamento, então XSS é um risco. A aplicação reduz exposição com expiração curta e inserção de conteúdo de usuário usando <code>textContent</code>; isso não elimina todos os riscos.</div>
+      <h3>Validação no servidor</h3><p>Dados vindos do cliente não são confiáveis. O servidor limita formato/tamanho, usa IDs e chaves validados e checa propriedade, associação ao grupo, status da partida, prazo e pré-requisitos. CORS não é controle de acesso. O segredo JWT e URI do Mongo devem ficar em variáveis de ambiente; não em arquivos publicados.</p>
+    </section>
+
+    <section class="section" id="email" data-title="E-mail, Brevo e migração">
+      <div class="section-head"><span class="section-number">18</span><div><h2>E-mail, Brevo e papel do Firebase</h2><p class="lede">Serviços externos complementam a API, mas não são o armazenamento principal atual.</p></div></div>
+      <div class="grid"><div class="panel"><h3>Brevo pela API HTTP</h3><p>O serviço de e-mail usa <code>fetch</code> para chamar a API HTTP do Brevo em verificação de e-mail e recuperação de senha. O README registra que o plano gratuito do Render bloqueia SMTP; por isso a integração não depende de porta SMTP.</p></div><div class="panel"><h3>Tokens de uso único</h3><p>Links de verificação/redefinição usam tokens aleatórios. O banco guarda hash do token, tipo e expiração; o token é consumido uma vez e documentos vencidos podem ser removidos por TTL.</p></div><div class="panel"><h3>Firebase legado</h3><p>O backend pode conferir credenciais de contas antigas pelo Firebase Authentication REST e migrar a conta para MongoDB com hash bcrypt. É um fluxo de transição condicionado às variáveis <code>FIREBASE_*</code>.</p></div><div class="panel"><h3>Firebase Hosting</h3><p><code>firebase.json</code> mantém configuração para hospedar arquivos estáticos. Isso é diferente de usar Firebase como autenticação/banco principal. O front pode continuar servido pelo Hosting.</p></div></div>
+      <p>De acordo com o README atual, autenticação e dados atuais são atendidos pela API própria e pelo MongoDB. A consulta ao Firebase permanece no caminho de migração de algumas contas antigas; regras antigas do Firestore/Realtime Database estão no repositório, mas não são usadas pelo jogo atual. Contas Google antigas e contas com MFA legado têm limitações documentadas.</p>
+      <div class="note"><strong>Na apresentação:</strong> evite dizer “a aplicação usa Firebase para tudo”. Uma formulação fiel é: “Firebase foi considerado/implementado em uma etapa anterior; a versão atual migrou autenticação e dados principais para uma API Express com MongoDB, mantendo Firebase Hosting para estáticos e uma integração limitada de migração de contas antigas.”</div>
+    </section>
+
+    <section class="section" id="testes" data-title="Testes automatizados">
+      <div class="section-head"><span class="section-number">19</span><div><h2>Testes automatizados</h2><p class="lede">Testes verificam comportamento esperado repetidamente e ajudam a evitar regressões.</p></div></div>
+      <p>O projeto usa o test runner nativo <code>node:test</code> e <code>node:assert</code>. O script <code>npm test</code> executa a suíte com concorrência 1. Os testes exercitam a API HTTP real criada por Express e usam <code>mongodb-memory-server</code> para iniciar um MongoDB temporário. E-mail/Firebase podem ser substituídos por dublês para não depender de serviços reais.</p>
+      <div class="codebox"><div class="code-label">Scripts do backend/package.json</div><button class="copy" type="button">Copiar</button><pre><code>"scripts": {
+  "start": "node src/server.js",
+  "dev": "node --watch src/server.js",
+  "test": "node --test --test-concurrency=1 test/"
+}</code></pre></div>
+      <p>Casos cobrindo autenticação, grupos, convites, chat, partidas, salas, SSE, limites e exclusão de conta aparecem nos testes. Um teste de autorização negativa é tão importante quanto o caminho feliz: por exemplo, verificar que um não membro recebe <code>403</code> ao ler um grupo.</p>
+      <h3>O que esse teste comprova e não comprova?</h3><p>Comprova os cenários implementados sob aquele ambiente de teste, não que todo comportamento em produção esteja perfeito. O Mongo temporário não é o cluster Atlas, e dublês de e-mail não enviam mensagens reais. Teste automatizado complementa teste manual e avaliação de usabilidade.</p>
+      <div class="note"><strong>Verificação desta cópia:</strong> a execução de <code>npm test</code> concluiu com 60 testes aprovados e 0 falhas. O número pode mudar quando a suíte evolui; reexecutem o comando na versão que será apresentada e usem a contagem real daquele resultado.</div>
+    </section>
+
+    <section class="section" id="deploy" data-title="Deploy e configuração">
+      <div class="section-head"><span class="section-number">20</span><div><h2>Deploy e configuração</h2><p class="lede">Front-end estático e API Node são serviços separados e têm configurações próprias.</p></div></div>
+      <p>O arquivo <code>render.yaml</code> descreve o serviço Node do Render: diretório-raiz <code>backend</code>, instalação reprodutível com <code>npm ci --omit=dev</code>, inicialização com <code>npm start</code> e verificação de saúde em <code>/api/health</code>. O front pode ser hospedado como arquivos estáticos, inclusive no Firebase Hosting.</p>
+      <div class="codebox"><div class="code-label">Variáveis essenciais · não inclua valores secretos no HTML</div><button class="copy" type="button">Copiar</button><pre><code>MONGODB_URI=...       # conexão privada com MongoDB Atlas
+MONGODB_DB_NAME=escape_py
+JWT_SECRET=...        # segredo forte, pelo menos 32 caracteres
+FRONTEND_URL=...     # origens permitidas pelo CORS
+PORT=3000            # porta local (a plataforma pode fornecer outra)</code></pre></div>
+      <p><code>dotenv</code> carrega variáveis do arquivo <code>.env</code> em desenvolvimento; o arquivo real não deve ser commitado. <code>.env.example</code> registra apenas os nomes e exemplos. Em produção, secrets são cadastrados no painel do provedor.</p>
+      <div class="grid"><div class="panel"><h3>Ambiente local</h3><p>Node.js 20.19+ conforme README; iniciar o back-end em <code>localhost:3000</code> e servir o front com servidor estático. <code>js/config.js</code> escolhe API local quando o hostname é localhost.</p></div><div class="panel"><h3>Limitações da hospedagem gratuita</h3><p>O README alerta para hibernação do serviço gratuito do Render após inatividade e atraso no primeiro acesso; SSE em memória pressupõe instância única; e-mails usam HTTP do Brevo.</p></div></div>
+    </section>
+
+    <section class="section" id="ferramentas" data-title="Ferramentas e metodologia">
+      <div class="section-head"><span class="section-number">21</span><div><h2>Ferramentas de equipe e metodologia</h2><p class="lede">Nem toda tecnologia do trabalho é uma dependência de execução do aplicativo.</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Ferramenta / prática</th><th>Categoria</th><th>Como explicar</th></tr></thead><tbody><tr><td>Git</td><td>Versionamento</td><td>Registra alterações de forma rastreável e permite comparar/restaurar versões.</td></tr><tr><td>GitHub</td><td>Hospedagem de repositório e colaboração</td><td>Facilita compartilhar código, revisar mudanças e integrar trabalho da equipe; citada no README como ferramenta de versionamento.</td></tr><tr><td>Trello / Kanban</td><td>Organização do trabalho</td><td>O Kanban visualiza tarefas em colunas de fluxo; o trabalho acadêmico cita Trello como ferramenta de acompanhamento.</td></tr><tr><td>Node test runner</td><td>Qualidade</td><td>Executa testes e asserções sem depender de um framework de testes externo grande.</td></tr><tr><td>Render</td><td>Hospedagem do back-end</td><td>Publica serviço Node descrito em <code>render.yaml</code>.</td></tr><tr><td>Firebase Hosting</td><td>Hospedagem estática</td><td>Pode servir HTML/CSS/JS; isso não significa que os dados atuais estejam no Firebase.</td></tr></tbody></table></div>
+      <p>O Kanban serve para tornar o trabalho visível: o time vê tarefas pendentes, em andamento e concluídas, ajuda a identificar bloqueios e combinar prioridade. O documento acadêmico inicial inclui Kanban/Trello na metodologia. Evitem afirmar detalhes específicos de quadro, sprint ou processo que não estejam documentados ou que a equipe não tenha realmente usado.</p>
+    </section>
+
+    <section class="section" id="estado-atual" data-title="O que está pronto e pontos de atenção">
+      <div class="section-head"><span class="section-number">22</span><div><h2>O que está pronto e o que merece atenção</h2><p class="lede">Uma boa defesa distingue implementação atual, proposta acadêmica inicial e limitações conhecidas.</p></div></div>
+      <div class="grid"><div class="panel"><h3>Implementação descrita no README atual</h3><ul class="checklist"><li>Front-end estático com páginas e módulos JavaScript.</li><li>API própria em Node.js + Express.</li><li>MongoDB Atlas como banco principal da API.</li><li>Cadastro, login, verificação/redefinição de senha e perfil.</li><li>Grupos, convites, chat, partidas, salas e auditoria.</li><li>Notificações SSE e execução de Python no browser via Pyodide.</li><li>Testes automatizados com MongoDB temporário.</li></ul></div><div class="panel"><h3>Pontos de atenção para alinhar com a equipe</h3><ul class="checklist"><li>A landing <code>index.html</code> ainda informa que salas estão em desenvolvimento, embora o repositório contenha telas/serviços de jogo; confirmem qual versão vai para a banca.</li><li><code>EstadoPartida</code> e serviços de jogo limitam a partida a 3 jogadores. Um grupo pode ter até 4 integrantes; não confundir limite de grupo com limite de jogadores.</li><li>O documento acadêmico inicial descreve tecnologias e arquitetura em fase de proposta, inclusive Firebase; expliquem a evolução para a arquitetura atual.</li><li>Testem API, e-mail, configuração de deploy e recursos externos no ambiente que será demonstrado.</li></ul></div></div>
+      <div class="note"><strong>Diferença de capacidade:</strong> grupo = até 4 integrantes segundo endpoints/testes de grupos; uma partida = até 3 jogadores segundo <code>EstadoPartida.MAX_JOGADORES</code>, regra do backend e testes de jogo. O quarto integrante do grupo não necessariamente entra como jogador naquela partida.</div>
+      <h3>O que significa “segurança no jogo” aqui?</h3><p>O back-end é autoridade sobre conta, associação ao grupo, status, relógio, pré-requisitos, limite de jogadores e gravação do estado. O cliente calcula o resultado dos testes Python e envia a ação correspondente. Essa separação reduz manipulação de estado, mas não equivale a validar remotamente a execução do código Python.</p>
+    </section>
+
+    <section class="section" id="linguagens" data-title="Linguagens e como funcionam">
+      <div class="section-head"><span class="section-number">23</span><div><h2>Linguagens e como funcionam</h2><p class="lede">O que cada linguagem do projeto é, quem a executa e em que momento.</p></div></div>
+      <p>Uma <strong>linguagem</strong> é só texto até que algum programa a execute. Esse programa pode ser o <strong>navegador</strong>, o <strong>Node.js</strong> ou o <strong>Pyodide</strong>. Para entender o projeto, pergunte sempre: <em>quem lê este arquivo e o que faz com ele?</em></p>
+      <div class="table-wrap"><table><thead><tr><th>Linguagem / formato</th><th>Tipo</th><th>Quem executa</th><th>Papel no Escape.py</th></tr></thead><tbody>
+      <tr><td><strong>HTML</strong></td><td>Marcação (descreve estrutura)</td><td>Navegador (parser constrói o DOM)</td><td>Páginas <code>sala.html</code>, <code>entrar.html</code>…</td></tr>
+      <tr><td><strong>CSS</strong></td><td>Folha de estilo (regras)</td><td>Navegador (motor de layout)</td><td><code>css/style.css</code>, <code>css/sala.css</code></td></tr>
+      <tr><td><strong>JavaScript</strong></td><td>Interpretada com JIT, tipagem dinâmica</td><td>V8 (Chrome/Node) ou motor equivalente</td><td>Toda a lógica do front (<code>js/</code>) e da API (<code>backend/src/</code>)</td></tr>
+      <tr><td><strong>Python</strong></td><td>Interpretada, tipagem dinâmica</td><td>Pyodide dentro de um Web Worker</td><td>O código que o <em>jogador</em> escreve nos enigmas</td></tr>
+      <tr><td><strong>JSON</strong></td><td>Formato de dados (não é linguagem de programação)</td><td>Qualquer um: <code>JSON.parse</code> / <code>JSON.stringify</code></td><td>Corpos de requisição, <code>sala-gotica.json</code>, <code>package.json</code></td></tr>
+      <tr><td><strong>BSON</strong></td><td>JSON binário com mais tipos (datas, ObjectId)</td><td>Driver e servidor MongoDB</td><td>Como os documentos são guardados no banco</td></tr>
+      <tr><td><strong>YAML</strong></td><td>Formato de configuração</td><td>Render (plataforma)</td><td><code>render.yaml</code></td></tr>
+      <tr><td><strong>WebAssembly</strong></td><td>Binário de baixo nível</td><td>Navegador</td><td>Formato em que o interpretador Python do Pyodide chega ao browser</td></tr>
+      </tbody></table></div>
+      <h3>Compilada × interpretada</h3>
+      <p>Em uma linguagem <strong>compilada</strong> (C, Rust), um compilador traduz o programa inteiro em código de máquina antes de rodar. Em uma <strong>interpretada</strong> (Python), um interpretador lê e executa o texto durante a execução. JavaScript fica no meio: o motor V8 interpreta primeiro e, nos trechos executados muitas vezes, gera código de máquina otimizado na hora (<strong>JIT</strong>, <em>just-in-time</em>). Por isso você não “compila” o JavaScript do projeto.</p>
+      <h3>Tipagem dinâmica</h3>
+      <p>Em JavaScript e Python o tipo pertence ao <em>valor</em>, não à variável. <code>let x = 5; x = "cinco";</code> é válido. A vantagem é rapidez para escrever; o custo é que erros de tipo só aparecem quando o código roda. É por isso que o back-end valida tudo o que chega (<code>utils/validacao.js</code>) em vez de confiar no tipo.</p>
+      <h3>O que o navegador faz com uma página</h3>
+      <div class="flow" style="grid-template-columns:repeat(4,minmax(0,1fr))"><div class="flow-step"><b>1 · Baixa o HTML</b><span>Requisição GET ao servidor estático (Firebase Hosting).</span></div><div class="flow-step"><b>2 · Monta o DOM</b><span>O parser transforma as tags em uma árvore de objetos. O CSS vira regras de estilo.</span></div><div class="flow-step"><b>3 · Executa o JS</b><span><code>&lt;script type="module"&gt;</code> carrega <code>main.js</code>, que importa o resto.</span></div><div class="flow-step"><b>4 · Reage a eventos</b><span>Cliques e respostas de rede disparam funções que alteram o DOM.</span></div></div>
+      <h3>Python no navegador: duas linguagens empilhadas</h3>
+      <p>O interpretador do Python (escrito em C) foi compilado para WebAssembly. O navegador roda esse binário e, por cima dele, o texto Python do jogador. O JavaScript apenas <em>envia o texto</em> ao Worker e <em>recebe o resultado</em> — por isso o código do aluno nunca chega ao servidor Node.</p>
+      <div class="note"><strong>Frase útil para a banca:</strong> “O mesmo JavaScript roda em dois lugares: no navegador, que tem DOM e <code>fetch</code> mas não acessa o banco; e no Node, que tem sistema de arquivos e rede mas não tem DOM. A linguagem é a mesma; o <em>ambiente</em> é diferente.”</div>
+    </section>
+
+    <section class="section" id="aprenda-js" data-title="JavaScript do zero">
+      <div class="section-head"><span class="section-number">24</span><div><h2>JavaScript do zero, com o código do projeto</h2><p class="lede">Cada conceito vem com a explicação e o lugar onde ele aparece no Escape.py.</p></div></div>
+
+      <h3>1 · Variáveis, tipos e valores</h3>
+      <p><code>const</code> cria uma referência que não pode ser reatribuída; <code>let</code> permite reatribuir. Use <code>const</code> por padrão. Os tipos primitivos são <code>string</code>, <code>number</code>, <code>boolean</code>, <code>null</code>, <code>undefined</code> e <code>bigint</code>; todo o resto (objetos, arrays, funções) é objeto.</p>
+      <div class="codebox"><div class="code-label">Exemplo didático</div><button class="copy" type="button">Copiar</button><pre><code>const nome = "Equipe Corvos";   // string
+let tentativas = 0;             // number, pode mudar
+tentativas += 1;
+const ativo = true;            // boolean
+const nada = null;              // ausência intencional
+let indefinido;                 // undefined: nunca recebeu valor</code></pre></div>
+
+      <h3>2 · Funções e arrow functions</h3>
+      <p>Uma função agrupa instruções reutilizáveis. A <em>arrow function</em> <code>(a) =&gt; expressão</code> é uma forma curta; sem chaves, o valor da expressão já é o retorno.</p>
+      <div class="codebox"><div class="code-label">Padrão real · js/nucleo/Api.js</div><button class="copy" type="button">Copiar</button><pre><code>static get(caminho) { return Api.requisitar("GET", caminho); }
+static post(caminho, corpo = {}) { return Api.requisitar("POST", caminho, corpo); }</code></pre></div>
+      <p><code>corpo = {}</code> é um <strong>parâmetro padrão</strong>: se ninguém passar o segundo argumento, vale <code>{}</code>. Os métodos <code>get/post/put/patch/excluir</code> são atalhos que chamam um único método <code>requisitar</code>.</p>
+
+      <h3>3 · Objetos, arrays e desestruturação</h3>
+      <p>Objeto guarda pares chave/valor; array guarda lista ordenada. <strong>Desestruturar</strong> é extrair campos em variáveis com uma linha.</p>
+      <div class="codebox"><div class="code-label">Padrão real · js/servicos/ServicoPartida.js</div><button class="copy" type="button">Copiar</button><pre><code>const { now } = await Api.get("/time");          // pega só o campo "now"
+const { game } = await Api.get(this.#caminho(gid));
+const arr = (await Api.get("/groups")).map((d) =&gt; Grupo.deDados(d));</code></pre></div>
+      <p><code>.map</code> cria um novo array aplicando uma função a cada item. Também são comuns <code>.filter</code> (mantém os que passam no teste), <code>.find</code> (primeiro que passa) e <code>.some</code> (algum passa?).</p>
+
+      <h3>4 · Template strings, <code>?.</code> e <code>??</code></h3>
+      <div class="codebox"><div class="code-label">Padrão real · Api.js e TempoReal.js</div><button class="copy" type="button">Copiar</button><pre><code>return `${API_URL}${caminho}`;                         // template string
+cabecalhos.Authorization = `Bearer ${Api.token}`;
+const erro = dados?.erro || {};                        // ?. não quebra se dados for null
+this.assinantes.get(canal)?.forEach((f) =&gt; f());       // só chama se existir</code></pre></div>
+      <p>O <code>?.</code> (encadeamento opcional) devolve <code>undefined</code> em vez de lançar erro quando o lado esquerdo é <code>null/undefined</code>. O <code>??</code> faz o mesmo papel de “valor padrão”, mas só para <code>null/undefined</code> (o <code>||</code> também troca <code>0</code> e <code>""</code>).</p>
+
+      <h3>5 · Classes, campos privados e <code>static</code></h3>
+      <p>Uma classe define um molde de objetos com dados e métodos. <code>static</code> pertence à classe, não à instância. O prefixo <code>#</code> torna o membro <strong>privado</strong>: só o código dentro da classe acessa.</p>
+      <div class="codebox"><div class="code-label">Padrão real · js/nucleo/TempoReal.js</div><button class="copy" type="button">Copiar</button><pre><code>export class TempoReal {
+  static ESPERA_MAXIMA_MS = 30000;      // constante da classe
+  constructor() {
+    this.assinantes = new Map();        // canal → conjunto de funções
+    this.tentativas = 0;
+  }
+  async #abrir() { /* só a própria classe chama */ }
+}
+export const tempoReal = new TempoReal();  // instância única (singleton)</code></pre></div>
+      <p><code>Map</code> é um dicionário com qualquer tipo de chave; <code>Set</code> é uma coleção sem repetição. Aqui, cada canal guarda um <code>Set</code> de funções a chamar quando o servidor avisa uma mudança.</p>
+
+      <h3>6 · Closures (funções que lembram do contexto)</h3>
+      <p>Uma função interna continua enxergando as variáveis da função externa mesmo depois que esta terminou. É o mecanismo por trás do <code>observar</code>.</p>
+      <div class="codebox"><div class="code-label">Trecho real · TempoReal.observar</div><button class="copy" type="button">Copiar</button><pre><code>observar(canais, carregar, aoAtualizar, aoFalhar = () =&gt; {}) {
+  let ativo = true;
+  let versao = 0;
+  const atualizar = async () =&gt; {
+    const minha = ++versao;
+    const dados = await carregar();
+    if (ativo &amp;&amp; minha === versao) aoAtualizar(dados);
+  };
+  /* ... assina os canais e chama atualizar() ... */
+  return () =&gt; { ativo = false; /* cancela */ };
+}</code></pre></div>
+      <p><strong>Leitura passo a passo:</strong> cada chamada de <code>observar</code> cria suas próprias <code>ativo</code> e <code>versao</code>, que <code>atualizar</code> “carrega consigo”. Se duas respostas chegarem fora de ordem, só vale a que tem o maior número (<code>minha === versao</code>) — as antigas são descartadas. A função retornada serve para <em>parar de observar</em> ao sair da tela.</p>
+
+      <h3>7 · Assíncrono: callbacks, Promises e async/await</h3>
+      <p>JavaScript tem <strong>uma única thread</strong>: faz uma coisa por vez. Operações lentas (rede, timers) não bloqueiam; elas são entregues ao ambiente e, quando terminam, o resultado volta numa <strong>fila</strong>. O <strong>event loop</strong> pega o próximo item da fila quando a pilha de execução está livre.</p>
+      <div class="flow" style="grid-template-columns:repeat(4,minmax(0,1fr))"><div class="flow-step"><b>1 · Chama fetch</b><span>O código pede a requisição e continua.</span></div><div class="flow-step"><b>2 · Navegador trabalha</b><span>A rede roda fora da sua thread.</span></div><div class="flow-step"><b>3 · Fila</b><span>A resposta entra numa fila de tarefas.</span></div><div class="flow-step"><b>4 · Event loop</b><span>Quando livre, retoma seu <code>await</code>.</span></div></div>
+      <div class="codebox"><div class="code-label">Trecho real · Api.requisitar</div><button class="copy" type="button">Copiar</button><pre><code>let resposta;
+try {
+  resposta = await fetch(Api.url(caminho), { method: metodo, headers: cabecalhos, body });
+} catch {
+  throw new ErroApi(0, "SEM_CONEXAO", "Sem conexão com o servidor...");
+}
+if (resposta.status === 204) return null;
+const dados = await resposta.json().catch(() =&gt; null);
+if (resposta.ok) return dados;</code></pre></div>
+      <p>Uma <strong>Promise</strong> é um objeto que representa um resultado que ainda não chegou (pendente → cumprida ou rejeitada). <code>await</code> pausa <em>aquela função</em> até a Promise resolver, sem travar a página. <code>fetch</code> só rejeita em falha de rede; um <code>404</code> ou <code>500</code> <strong>não</strong> rejeita — por isso o código confere <code>resposta.ok</code>. O status <code>204</code> significa “sucesso sem corpo”, então não há JSON para ler.</p>
+
+      <h3>8 · Eventos e DOM</h3>
+      <p>O <strong>DOM</strong> é a árvore de objetos que representa a página. Você seleciona um elemento, muda seu conteúdo e registra um <em>ouvinte</em> para eventos.</p>
+      <div class="codebox"><div class="code-label">Padrão usado em todo o projeto</div><button class="copy" type="button">Copiar</button><pre><code>const botao = document.querySelector("#iniciar");
+botao.addEventListener("click", async () =&gt; {
+  await servicoPartida.iniciar(idGrupo);
+});
+elemento.textContent = mensagemDoUsuario;   // seguro: não interpreta HTML</code></pre></div>
+      <p>Usar <code>textContent</code> em vez de <code>innerHTML</code> evita <strong>XSS</strong>: se um usuário digitar <code>&lt;script&gt;</code> no chat, aparece como texto, não executa.</p>
+
+      <h3>9 · Módulos</h3>
+      <p>Cada arquivo tem escopo próprio. O que não for <code>export</code> fica invisível para os outros. <code>import { Api } from "./Api.js"</code> traz a classe. <code>import()</code> como função (importação dinâmica) carrega o arquivo sob demanda — é o que <code>main.js</code> faz para cada página.</p>
+
+      <h3>10 · Web Workers e mensagens</h3>
+      <p>Um Worker é outra thread, <strong>sem acesso ao DOM</strong>. Thread principal e Worker só conversam por mensagens (<code>postMessage</code> / evento <code>message</code>), com cópia dos dados. Veja <code>ExecutorPython.executar</code>: ele envia <code>{ id, codigo, nomeFuncao, testes, modo }</code> e só aceita a resposta cujo <code>id</code> bate — assim respostas de execuções antigas não se misturam. Se passar de 6 s, o Worker é encerrado com <code>terminate()</code>.</p>
+      <div class="note"><strong>Exercício:</strong> abra <code>js/nucleo/Api.js</code> e tente explicar, sem olhar o guia, o que acontece quando o servidor responde <code>401</code> com o código <code>TOKEN_INVALIDO</code>. (Resposta: o token é apagado do <code>localStorage</code> e um <code>ErroApi</code> é lançado.)</div>
+    </section>
+
+    <section class="section" id="aprenda-backend" data-title="Back-end do zero">
+      <div class="section-head"><span class="section-number">25</span><div><h2>Back-end do zero, com o código do projeto</h2><p class="lede">O que é um servidor, o que acontece em cada requisição e por que o servidor decide, não o navegador.</p></div></div>
+
+      <h3>1 · O que é um back-end</h3>
+      <p>É um programa que fica <strong>ligado esperando requisições</strong> e devolve respostas. Ele existe porque o navegador do usuário não é confiável: qualquer pessoa pode abrir o console e alterar o JavaScript. Tudo que precisa ser <em>verdadeiro para todos</em> (quem é o dono do grupo, quanto tempo resta, qual enigma foi resolvido) precisa ser decidido num lugar que o usuário não controla.</p>
+
+      <h3>2 · O ciclo requisição → resposta</h3>
+      <div class="codebox"><div class="code-label">Uma requisição HTTP, crua</div><button class="copy" type="button">Copiar</button><pre><code>POST /api/games/abc123/start HTTP/1.1
+Host: escape-py-api.onrender.com
+Authorization: Bearer eyJhbGciOi...
+Content-Type: application/json
+
+{}
+
+─── resposta ───
+HTTP/1.1 204 No Content</code></pre></div>
+      <p>Uma requisição tem <strong>método</strong> (o verbo), <strong>caminho</strong>, <strong>cabeçalhos</strong> (metadados, como o token) e, às vezes, <strong>corpo</strong>. A resposta tem <strong>status</strong>, cabeçalhos e corpo.</p>
+      <div class="table-wrap"><table><thead><tr><th>Status</th><th>Significado</th><th>Onde aparece no projeto</th></tr></thead><tbody>
+      <tr><td><code>200</code></td><td>OK, com corpo</td><td><code>GET /api/groups</code></td></tr>
+      <tr><td><code>201</code></td><td>Criado</td><td>Criar partida (<code>controller.criar</code>)</td></tr>
+      <tr><td><code>204</code></td><td>OK, sem corpo</td><td>Iniciar, entrar, registrar pista/enigma</td></tr>
+      <tr><td><code>400</code></td><td>Requisição inválida</td><td><code>JSON_INVALIDO</code>, validações de campo</td></tr>
+      <tr><td><code>401</code></td><td>Não autenticado</td><td><code>TOKEN_AUSENTE</code>, <code>TOKEN_INVALIDO</code></td></tr>
+      <tr><td><code>403</code></td><td>Autenticado, mas sem permissão</td><td><code>SOMENTE_DONO</code>, <code>EMAIL_NAO_VERIFICADO</code></td></tr>
+      <tr><td><code>404</code></td><td>Não existe</td><td><code>ROTA_INEXISTENTE</code>, <code>PARTIDA_INEXISTENTE</code></td></tr>
+      <tr><td><code>409</code></td><td>Conflito com o estado atual</td><td><code>ENIGMA_JA_RESOLVIDO</code>, <code>PARTIDA_JA_INICIADA</code></td></tr>
+      <tr><td><code>413</code></td><td>Corpo grande demais</td><td>Limite de 1 MB do <code>express.json</code></td></tr>
+      <tr><td><code>500</code></td><td>Erro interno</td><td><code>ERRO_INTERNO</code> (sem vazar detalhes)</td></tr>
+      </tbody></table></div>
+
+      <h3>3 · Express: o servidor em poucas linhas</h3>
+      <div class="codebox"><div class="code-label">Mínimo didático (não é o código do projeto)</div><button class="copy" type="button">Copiar</button><pre><code>import express from "express";
+const app = express();
+app.use(express.json());                 // lê o corpo JSON e põe em req.body
+
+app.get("/api/ola/:nome", (req, res) =&gt; {
+  res.json({ mensagem: `Olá, ${req.params.nome}` });
+});
+
+app.listen(3000);                       // fica escutando na porta 3000</code></pre></div>
+      <p>Cada rota recebe <code>req</code> (o que chegou: <code>params</code> do caminho, <code>query</code> depois do <code>?</code>, <code>body</code>, <code>headers</code>) e <code>res</code> (como responder: <code>json</code>, <code>status</code>, <code>end</code>).</p>
+
+      <h3>4 · Middleware: a esteira de processamento</h3>
+      <p>Cada requisição passa por uma <strong>fila de funções</strong>, na ordem em que foram registradas. Cada uma pode responder e encerrar, ou chamar <code>next()</code> para passar à próxima.</p>
+      <div class="codebox"><div class="code-label">Ordem real · backend/src/app.js</div><button class="copy" type="button">Copiar</button><pre><code>cors(...)                      1. confere a origem
+express.json({ limit: "1mb" })  2. lê o corpo
+(req,res,next) =&gt; req.ctx = ctx 3. injeta banco, config, e-mail, SSE
+limitadores.geral               4. limite de requisições em /api
+/api/auth, /users, /groups,
+/invites, /games, /api          5. rotas
+rotaNaoEncontrada               6. 404 se nada respondeu
+tratarErros                     7. converte qualquer erro em JSON</code></pre></div>
+      <p>O último é especial: um middleware com <strong>quatro parâmetros</strong> <code>(erro, req, res, next)</code> é reconhecido pelo Express como tratador de erros. Em <code>middleware/erros.js</code>, erros esperados (<code>ErroHttp</code>) viram a resposta com seu status; qualquer outro é registrado e responde <code>500</code> sem expor detalhes internos.</p>
+      <p>Na rota de partidas, <code>r.use(jogador)</code> aplica a mesma esteira de três middlewares a <em>todas</em> as rotas dali: <code>jogador = [autenticar, exigirEmailVerificado, exigirPerfil]</code>.</p>
+
+      <h3>5 · Routes → controller → service</h3>
+      <div class="codebox"><div class="code-label">As três camadas para “iniciar partida”</div><button class="copy" type="button">Copiar</button><pre><code>// routes/partidas.js — só liga caminho a função
+r.post("/:gid/start", c.iniciar);
+
+// controllers/partidasController.js — traduz HTTP
+export async function iniciar(req, res) {
+  await partidas.iniciarPartida(req.ctx, req.usuario, req.params.gid);
+  res.status(204).end();
+}
+
+// services/partidas.js — regra de negócio + banco
+export async function iniciarPartida(ctx, usuario, gid) {
+  const grupo = await grupoComoDono(ctx, gid, String(usuario._id));
+  /* ... updateOne({ _id: gid, status: "WAITING" }, ...) ... */
+}</code></pre></div>
+      <p>Note que o controller <strong>não tem <code>try/catch</code></strong>. No Express 5, se um handler <code>async</code> lançar erro (ou rejeitar uma Promise), o erro vai automaticamente para <code>tratarErros</code>. Assim o service pode simplesmente fazer <code>throw proibido(...)</code> ou <code>throw conflito(...)</code>.</p>
+
+      <h3>6 · Autenticação passo a passo</h3>
+      <div class="codebox"><div class="code-label">Trecho real · middleware/autenticacao.js</div><button class="copy" type="button">Copiar</button><pre><code>const [esquema, token] = (req.get("authorization") || "").split(" ");
+if (esquema !== "Bearer" || !token) throw naoAutenticado(..., "TOKEN_AUSENTE");
+
+const dados = lerSessao(req.ctx, token);               // jwt.verify: assinatura + validade
+const usuario = await buscarPorId(req.ctx, dados.sub);  // sub = id do usuário
+if (!usuario || (usuario.sessionVersion || 0) !== dados.ver) throw ...TOKEN_INVALIDO;
+req.usuario = usuario;                                 // as próximas funções usam isto
+next();</code></pre></div>
+      <p>O JWT carrega só o <strong>id</strong> (<code>sub</code>) e a <strong>versão da sessão</strong> (<code>ver</code>), mais emissor, público e expiração. Papel (<code>role</code>), e-mail verificado e perfil são lidos do <em>banco</em> a cada requisição; assim, mudar a senha (que incrementa <code>sessionVersion</code>) derruba tokens antigos imediatamente, o que um JWT sozinho não permitiria.</p>
+
+      <h3>7 · Banco de dados: o filtro como trava de concorrência</h3>
+      <p>Dois jogadores podem clicar “resolver” ao mesmo tempo. Em vez de ler, comparar em JavaScript e gravar (o que permite corrida), o serviço faz <strong>uma única operação condicional</strong> no MongoDB:</p>
+      <div class="codebox"><div class="code-label">Trecho real · services/partidas.js, registrarEnigma</div><button class="copy" type="button">Copiar</button><pre><code>const filtro = {
+  _id: gid, status: "PLAYING", expiresAt: { $gt: new Date() }, players: uid,
+  [`solved.${chave}`]: { $exists: false }          // ainda não resolvido
+};
+enigma.pistas.forEach((o) =&gt; { filtro[`found.${o}`] = { $exists: true }; });  // pistas já achadas
+
+const r = await ctx.db.collection("games").updateOne(filtro, { $set });
+if (!r.modifiedCount) throw conflito("Este enigma ainda não pode ser resolvido.", ...);</code></pre></div>
+      <p><strong>Leitura:</strong> “atualize a partida <em>somente se</em> ela estiver em andamento, dentro do prazo, o usuário for jogador, o enigma ainda não estiver resolvido e as pistas exigidas existirem”. O MongoDB aplica isso de forma <strong>atômica</strong> num único documento: se dois pedidos chegarem juntos, só um modifica (<code>modifiedCount = 1</code>); o outro recebe <code>0</code> e o serviço responde <code>409</code>. Prazo, participação e pré-requisitos são verificados <em>na mesma operação</em> que grava.</p>
+
+      <h3>8 · Variáveis de ambiente e configuração</h3>
+      <p>Segredos (<code>JWT_SECRET</code>, <code>MONGODB_URI</code>) não ficam no código: são lidos de <code>process.env</code> em <code>config/ambiente.js</code>. Isso permite usar valores diferentes em desenvolvimento, testes e produção sem alterar arquivos, e impede que o segredo vá para o repositório.</p>
+
+      <h3>9 · Injeção de dependências simples: o <code>ctx</code></h3>
+      <p>Banco, configuração, e-mail e SSE não são importados diretamente pelos services; chegam num objeto <code>ctx</code> que o <code>criarApp(ctx)</code> injeta em <code>req.ctx</code>. Nos testes, o <code>ctx</code> usa um MongoDB em memória e um e-mail falso — mesmo código, dependências trocadas.</p>
+      <div class="note"><strong>Exercício:</strong> escolha qualquer endpoint da lista <code>routes/*.js</code> e siga os três arquivos (route → controller → service). Para cada um, responda: quem pode chamar? o que é validado? qual coleção é alterada? há notificação SSE?</div>
+    </section>
+
+    <section class="section" id="rastreio" data-title="Rastreando uma requisição">
+      <div class="section-head"><span class="section-number">26</span><div><h2>Rastreando uma requisição de ponta a ponta</h2><p class="lede">O caminho completo de “o dono clica em Iniciar” até todos os jogadores verem a partida começar.</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>#</th><th>Onde</th><th>O que acontece</th></tr></thead><tbody>
+      <tr><td>1</td><td><code>js/paginas/PaginaSala.js</code> (~linha 219)</td><td>O clique do dono chama <code>this.partida.iniciar()</code>.</td></tr>
+      <tr><td>2</td><td><code>js/servicos/Partida.js</code> → <code>ServicoPartida.js</code></td><td>A regra do jogo no cliente delega a <code>servico.iniciar(gid)</code>, que chama <code>Api.post("/games/{gid}/start")</code>.</td></tr>
+      <tr><td>3</td><td><code>js/nucleo/Api.js</code></td><td><code>fetch</code> com <code>Authorization: Bearer …</code> para <code>API_URL</code> (definida em <code>js/config.js</code>).</td></tr>
+      <tr><td>4</td><td>Internet → Render</td><td>O proxy do Render repassa; por isso <code>trust proxy</code> está ativo em <code>app.js</code>.</td></tr>
+      <tr><td>5</td><td><code>app.js</code></td><td>CORS → JSON → <code>req.ctx</code> → limite geral → <code>app.use("/api/games", rotasPartidas())</code>.</td></tr>
+      <tr><td>6</td><td><code>routes/partidas.js</code></td><td><code>r.use(jogador)</code> autentica; <code>r.post("/:gid/start", c.iniciar)</code> casa a rota.</td></tr>
+      <tr><td>7</td><td><code>middleware/autenticacao.js</code></td><td>Valida JWT, busca usuário no Mongo, exige e-mail verificado e perfil completo.</td></tr>
+      <tr><td>8</td><td><code>controllers/partidasController.js</code></td><td><code>iniciar</code> chama o service e responde <code>204</code>.</td></tr>
+      <tr><td>9</td><td><code>services/partidas.js · iniciarPartida</code></td><td><code>grupoComoDono</code> confere permissão; calcula <code>expiresAt</code> pela dificuldade; <code>updateOne({status:"WAITING"})</code> → <code>PLAYING</code>.</td></tr>
+      <tr><td>10</td><td><code>avisar()</code> → <code>tempoReal.notificar</code></td><td>Escreve <code>data: {"canal":"partida:gid"}</code> nas conexões SSE abertas dos membros.</td></tr>
+      <tr><td>11</td><td><code>js/nucleo/TempoReal.js</code></td><td><code>#ler</code> separa o bloco; <code>#processar</code> chama os assinantes do canal.</td></tr>
+      <tr><td>12</td><td><code>ServicoPartida.observar</code></td><td>Executa de novo <code>Api.get("/games/{gid}")</code> e entrega o <code>EstadoPartida</code> à página, que troca para a vista de jogo.</td></tr>
+      </tbody></table></div>
+      <h3>Mapa rápido: “onde fica…?”</h3>
+      <div class="table-wrap"><table><thead><tr><th>Quero achar…</th><th>Arquivo</th></tr></thead><tbody>
+      <tr><td>A URL do back-end (local × produção)</td><td><code>js/config.js</code></td></tr>
+      <tr><td>O único <code>fetch</code> das chamadas REST</td><td><code>js/nucleo/Api.js</code> → <code>requisitar</code></td></tr>
+      <tr><td>Onde o token é guardado/lido</td><td><code>Api.js</code> (<code>localStorage</code>, chave <code>escape-sessao</code>)</td></tr>
+      <tr><td>Chamadas de login/cadastro</td><td><code>js/servicos/ServicoAutenticacao.js</code></td></tr>
+      <tr><td>Chamadas de grupos, convites, chat</td><td><code>ServicoGrupos.js</code>, <code>ServicoConvites.js</code>, <code>ServicoChat.js</code></td></tr>
+      <tr><td>Chamadas da partida</td><td><code>js/servicos/ServicoPartida.js</code></td></tr>
+      <tr><td>Conexão SSE (cliente)</td><td><code>js/nucleo/TempoReal.js</code> → <code>#abrir</code></td></tr>
+      <tr><td>Conexão SSE (servidor)</td><td><code>routes/sistema.js</code> (<code>GET /events</code>) → <code>services/tempoReal.js</code></td></tr>
+      <tr><td>Rodar o Python do jogador</td><td><code>js/nucleo/ExecutorPython.js</code> + <code>PyodideWorker.js</code></td></tr>
+      <tr><td>Registro de ordem dos middlewares</td><td><code>backend/src/app.js</code></td></tr>
+      <tr><td>Criação de índices</td><td><code>backend/src/config/banco.js</code></td></tr>
+      <tr><td>Emissão e leitura do JWT</td><td><code>backend/src/services/sessao.js</code></td></tr>
+      <tr><td>Hash de senha (bcrypt)</td><td><code>backend/src/services/autenticacao.js</code></td></tr>
+      <tr><td>Regras da partida</td><td><code>backend/src/services/partidas.js</code></td></tr>
+      </tbody></table></div>
+      <p class="small">Confira os nomes dos arquivos no repositório antes de apresentar; se algo for renomeado, este mapa precisa ser atualizado.</p>
+    </section>
+
+    <section class="section" id="perguntas" data-title="Perguntas da banca">
+      <div class="section-head"><span class="section-number">27</span><div><h2>Perguntas possíveis da banca</h2><p class="lede">Toque/click para abrir. Respostas curtas para treinar; desenvolvam com exemplos do próprio código.</p></div></div>
+      <h3>Arquitetura e tecnologias</h3>
+      <div class="qa-list">
+        <details class="qa"><summary>Como a aplicação está organizada?</summary><div class="answer"><p>O navegador entrega a interface HTML/CSS/JavaScript. Ele conversa por HTTP/JSON com uma API Node.js/Express. A API aplica regras e usa o driver oficial para acessar MongoDB Atlas. SSE avisa clientes conectados sobre mudanças, e então o front busca os dados atualizados.</p></div></details>
+        <details class="qa"><summary>Por que usar JavaScript no front e Node.js no back?</summary><div class="answer"><p>JavaScript já executa nativamente no navegador e também pode rodar no servidor pelo Node. Isso permite usar uma linguagem comum nas duas camadas, embora browser e servidor tenham responsabilidades e ambientes diferentes.</p></div></details>
+        <details class="qa"><summary>O que significa REST e por que a API usa JSON?</summary><div class="answer"><p>REST organiza operações em recursos e métodos HTTP padronizados. JSON é um formato compacto e amplamente suportado para representar os dados que o front envia e recebe.</p></div></details>
+        <details class="qa"><summary>Por que separar rotas, controllers e services?</summary><div class="answer"><p>Rotas mapeiam URLs; controllers traduzem requisições/respostas HTTP; services contêm regras de negócio e persistência. A separação facilita leitura, manutenção e testes.</p></div></details>
+        <details class="qa"><summary>Por que MongoDB em vez de armazenar tudo no navegador?</summary><div class="answer"><p>Os dados precisam ser compartilhados entre integrantes e sobreviver a sessões diferentes. A base central no servidor permite persistência, índices e checagem das regras. O navegador não recebe as credenciais do banco.</p></div></details>
+        <details class="qa"><summary>Por que usar SSE e não atualizar a tela apenas com polling?</summary><div class="answer"><p>SSE mantém um fluxo HTTP aberto para o servidor enviar avisos com pouca demora, evitando consultas repetidas sem necessidade. Após o aviso, o front faz uma consulta REST para obter a versão atual. O trade-off é conexão aberta e arquitetura atual em memória/instância única.</p></div></details>
+        <details class="qa"><summary>Qual a diferença entre SSE e WebSocket?</summary><div class="answer"><p>SSE é unidirecional, servidor para cliente, adequado a avisos. WebSocket é bidirecional e atende conversas contínuas nos dois sentidos. Neste projeto, ações do usuário seguem por REST e atualizações chegam por SSE.</p></div></details>
+      </div>
+      <h3>Front-end e código do jogo</h3>
+      <div class="qa-list">
+        <details class="qa"><summary>O que são HTML, CSS e JavaScript e qual função cada um tem?</summary><div class="answer"><p>HTML estrutura e dá significado ao conteúdo; CSS define apresentação e responsividade; JavaScript controla interações, estado de tela, chamadas HTTP e comportamento do jogo.</p></div></details>
+        <details class="qa"><summary>Como uma página escolhe qual código JavaScript carregar?</summary><div class="answer"><p>O HTML informa <code>data-pagina</code> no body. <code>main.js</code> consulta esse valor em um mapa e importa dinamicamente a classe da página correta, como <code>PaginaSala</code>.</p></div></details>
+        <details class="qa"><summary>O que é um ES Module e que benefício traz?</summary><div class="answer"><p>É um arquivo que pode importar e exportar funcionalidades com <code>import</code>/<code>export</code>. Permite dividir responsabilidades e declarar dependências em vez de colocar tudo num script global.</p></div></details>
+        <details class="qa"><summary>Como as imagens da sala viram áreas interativas?</summary><div class="answer"><p>Uma imagem/render ocupa o palco e uma camada SVG posiciona hotspots sobre objetos. Cada hotspot aponta para um objeto com regras de interação; coordenadas normalizadas ajudam a manter posição proporcional ao tamanho da cena.</p></div></details>
+        <details class="qa"><summary>Como o sistema de dificuldade altera a partida?</summary><div class="answer"><p>A configuração associa dificuldade ao número de enigmas e duração: fácil 3/25 min, médio 4/45 min, difícil 5/60 min. O gerador usa semente para selecionar conteúdo e o servidor define o relógio real da partida.</p></div></details>
+        <details class="qa"><summary>Como o jogador escreve Python sem instalar Python?</summary><div class="answer"><p>Pyodide executa Python no browser por WebAssembly. O projeto inicia o interpretador em um Web Worker e envia o código para execução/testes, devolvendo o resultado à interface.</p></div></details>
+        <details class="qa"><summary>Por que executar o código em um Worker?</summary><div class="answer"><p>Um Worker separa a execução da thread principal de UI; assim, o código não bloqueia diretamente a interação. O projeto aplica um limite de tempo e encerra o Worker se a execução travar.</p></div></details>
+        <details class="qa"><summary>O que são as pistas, enigmas e dependências?</summary><div class="answer"><p>Pistas revelam partes necessárias para resolver enigmas. Configuração e estado da partida guardam quais objetos foram descobertos e quais enigmas foram resolvidos; certas pistas/enigmas ficam bloqueados até as condições anteriores acontecerem. O desafio final exige os demais.</p></div></details>
+      </div>
+      <h3>Back-end, segurança e validação</h3>
+      <div class="qa-list">
+        <details class="qa"><summary>Como uma senha é armazenada?</summary><div class="answer"><p>Ela é processada com bcrypt e o banco armazena o hash, não o texto original. Durante login, bcrypt compara a senha informada com o hash salvo. O custo 12 aumenta o custo computacional do ataque por tentativa.</p></div></details>
+        <details class="qa"><summary>O que um JWT faz e o que ele não faz?</summary><div class="answer"><p>É uma credencial assinada que comprova emissão pelo servidor e contém claims como assunto/expiração. Ele não é automaticamente criptografado; quem o recebe pode ler claims. A API verifica assinatura/expiração e busca o usuário para autorizar.</p></div></details>
+        <details class="qa"><summary>CORS impede que alguém não autorizado use a API?</summary><div class="answer"><p>Não. CORS orienta o navegador sobre quais origens podem ler respostas cross-origin. A autenticação e autorização são controles separados e continuam necessárias; scripts de servidor e outros clientes não são protegidos por CORS.</p></div></details>
+        <details class="qa"><summary>Por que a API precisa validar se o usuário é dono ou membro?</summary><div class="answer"><p>Um identificador na URL não prova permissão. O back-end checa identidade, papel, associação ao grupo, estado da partida, prazo e pré-requisitos para cada ação. A interface não é uma fronteira confiável.</p></div></details>
+        <details class="qa"><summary>A API executa o Python escrito pelo jogador?</summary><div class="answer"><p>Não no fluxo atual: o Pyodide executa no browser. A API registra progressão e valida regras do domínio, mas o código executável e os testes rodam pelo Worker no cliente. Expliquem essa distinção e a limitação de confiar no resultado enviado pelo cliente.</p></div></details>
+        <details class="qa"><summary>Como a equipe testa sem usar o banco de produção?</summary><div class="answer"><p>Os testes iniciam MongoDB temporário com <code>mongodb-memory-server</code> e levantam a API real em uma porta local. Serviços externos, como e-mail, podem ser substituídos por dublês.</p></div></details>
+        <details class="qa"><summary>Qual a diferença entre autenticação e autorização?</summary><div class="answer"><p>Autenticação confirma a identidade; autorização aplica permissões. Um JWT válido pode identificar um usuário, mas a rota ainda verifica se ele é dono, membro, jogador ou administrador.</p></div></details>
+        <details class="qa"><summary>Por que o timer do jogo é confiável se cada computador tem relógio diferente?</summary><div class="answer"><p>O servidor grava início/expiração e verifica o prazo nas operações. O front consulta hora do servidor e ajusta o cronômetro exibido. Alterar o relógio local não muda a data limite autoritativa armazenada no banco.</p></div></details>
+      </div>
+      <h3>Técnicas: “onde isso acontece no código?”</h3>
+      <div class="qa-list">
+        <details class="qa"><summary>Onde o front-end faz as requisições à API?</summary><div class="answer"><p>Em um único ponto: <code>Api.requisitar</code>, em <code>js/nucleo/Api.js</code>, que chama <code>fetch</code>. Os arquivos de <code>js/servicos/</code> (<code>ServicoPartida</code>, <code>ServicoGrupos</code>…) não usam <code>fetch</code> diretamente; eles chamam <code>Api.get/post/patch/put/excluir</code> com o caminho. A exceção é a conexão SSE, aberta com <code>fetch</code> em <code>TempoReal.js</code>.</p></div></details>
+        <details class="qa"><summary>Onde está o endereço do servidor? Como o front sabe se está local ou em produção?</summary><div class="answer"><p>Em <code>js/config.js</code>: se <code>location.hostname</code> for <code>localhost</code> ou <code>127.0.0.1</code>, usa <code>http://localhost:3000/api</code>; senão usa a API publicada no Render.</p></div></details>
+        <details class="qa"><summary>Onde o token do usuário é guardado e como ele chega ao servidor?</summary><div class="answer"><p>Após o login, <code>Api.guardarToken</code> grava no <code>localStorage</code> (chave <code>escape-sessao</code>). A cada chamada, <code>Api.requisitar</code> lê o token e envia o cabeçalho <code>Authorization: Bearer …</code>. O <code>localStorage</code> é acessível por JavaScript da página, então XSS é o risco; o projeto mitiga com expiração e uso de <code>textContent</code>.</p></div></details>
+        <details class="qa"><summary>Onde o servidor valida o token?</summary><div class="answer"><p>No middleware <code>autenticar</code> (<code>backend/src/middleware/autenticacao.js</code>). Ele separa “Bearer” e o token, chama <code>lerSessao</code> (<code>jwt.verify</code> com HS256, emissor e público) e busca o usuário no banco para comparar a <code>sessionVersion</code>. Em falha, responde <code>401</code> <code>TOKEN_INVALIDO</code>.</p></div></details>
+        <details class="qa"><summary>O que acontece no front quando o token expira?</summary><div class="answer"><p>A API responde <code>401</code> com código <code>TOKEN_INVALIDO</code>. Em <code>Api.requisitar</code>, o token é apagado do <code>localStorage</code> e um <code>ErroApi</code> é lançado com a mensagem pronta para o usuário.</p></div></details>
+        <details class="qa"><summary>O que vai dentro do JWT? Papel de administrador está nele?</summary><div class="answer"><p>Não. O token carrega o id (<code>sub</code>), a versão da sessão (<code>ver</code>), emissor, público e expiração. O papel e o estado do e-mail são lidos do banco em cada requisição. Isso permite revogar sessões ao trocar a senha e impede que uma permissão antiga continue valendo.</p></div></details>
+        <details class="qa"><summary>Onde a conexão em tempo real é aberta, no cliente e no servidor?</summary><div class="answer"><p>Cliente: <code>TempoReal.#abrir</code> faz <code>fetch</code> em <code>/events</code> e lê o fluxo. Servidor: a rota <code>GET /api/events</code> (<code>routes/sistema.js</code>) passa por <code>autenticar</code> e <code>exigirEmailVerificado</code> e chama <code>tempoReal.abrir</code> (<code>services/tempoReal.js</code>), que envia os cabeçalhos <code>text/event-stream</code> e guarda a resposta aberta em um <code>Map</code> por usuário.</p></div></details>
+        <details class="qa"><summary>Por que não usaram o <code>EventSource</code> do navegador?</summary><div class="answer"><p><code>EventSource</code> não permite definir cabeçalhos como <code>Authorization</code>. Como o JWT vai no cabeçalho (e não em cookie nem na URL, onde ficaria exposto em logs), o projeto lê o fluxo com <code>fetch</code> e implementa a reconexão manualmente.</p></div></details>
+        <details class="qa"><summary>Onde o servidor decide avisar os outros jogadores?</summary><div class="answer"><p>Ao fim de cada operação de <code>services/partidas.js</code> há <code>avisar(ctx, grupo, gid)</code>, que chama <code>avisarGrupo</code> e depois <code>ctx.tempoReal.notificar(membros, "partida:{gid}")</code>. No cliente, <code>ServicoPartida.observar</code> está assinado nesse canal e refaz <code>GET /api/games/{gid}</code>.</p></div></details>
+        <details class="qa"><summary>O que acontece se a conexão SSE cair?</summary><div class="answer"><p><code>TempoReal</code> tenta reconectar com espera crescente (1 s, 2 s, 4 s… até 30 s). Na reconexão, o servidor manda o canal <code>conectado</code>; como avisos podem ter se perdido, o cliente recarrega os dados de <em>todos</em> os assinantes. Um <code>ping</code> a cada 25 s mantém a conexão viva contra proxies.</p></div></details>
+        <details class="qa"><summary>Onde o tempo da partida é definido? O que impede o jogador de mexer no relógio?</summary><div class="answer"><p>Em <code>iniciarPartida</code> (<code>services/partidas.js</code>): <code>expiresAt = agora + DIFICULDADES[dificuldade].minutos</code>, gravado no banco. As operações de pista/enigma filtram por <code>expiresAt: { $gt: new Date() }</code> no próprio <code>updateOne</code>. O front só exibe: <code>ServicoPartida.deslocamentoMs</code> consulta <code>GET /api/time</code> e compensa a diferença entre o relógio local e o do servidor.</p></div></details>
+        <details class="qa"><summary>Dois jogadores resolvem o mesmo enigma ao mesmo tempo. O que acontece?</summary><div class="answer"><p>O <code>updateOne</code> em <code>registrarEnigma</code> só altera se <code>solved.{chave}</code> ainda não existir. O MongoDB aplica a condição de forma atômica no documento: um pedido modifica, o outro recebe <code>modifiedCount = 0</code>, e o service responde <code>409</code> <code>ENIGMA_JA_RESOLVIDO</code>. Não há condição de corrida entre “ler” e “gravar” porque são uma operação só.</p></div></details>
+        <details class="qa"><summary>Como o servidor garante que o enigma final só conclui depois dos demais?</summary><div class="answer"><p>Em <code>registrarEnigma</code>, se o enigma tem <code>final</code>, o filtro acrescenta <code>solved.{k}: { $exists: true }</code> para todos os outros enigmas da <code>ordem</code>. Se algum faltar, nada é modificado e a resposta é <code>409</code> <code>ENIGMA_BLOQUEADO</code>. Se passar, o mesmo <code>$set</code> grava <code>status: "COMPLETED"</code>, a data de término e a pontuação.</p></div></details>
+        <details class="qa"><summary>O cliente pode mandar uma pontuação falsa? Como o servidor reage?</summary><div class="answer"><p>Pode tentar. O servidor valida formato e faixa (<code>inteiro(corpo.score, …, 0, 5000)</code>, dicas de 0 a 3), mas não recalcula a pontuação a partir do código Python, porque quem executa o teste é o navegador. Essa é uma limitação conhecida e deve ser dita abertamente: a integridade do <em>fluxo</em> é do servidor; a do <em>resultado do teste</em> é do cliente.</p></div></details>
+        <details class="qa"><summary>Onde os erros viram resposta HTTP?</summary><div class="answer"><p>Os services lançam erros tipados (<code>naoAutenticado</code>, <code>proibido</code>, <code>conflito</code>… de <code>utils/erros.js</code>). O Express 5 encaminha qualquer rejeição de handler <code>async</code> para <code>tratarErros</code> (<code>middleware/erros.js</code>), que monta <code>{ erro: { codigo, mensagem } }</code> com o status certo. Erros inesperados viram <code>500</code> sem expor detalhes. No front, <code>Api.requisitar</code> converte o JSON em <code>ErroApi</code>.</p></div></details>
+        <details class="qa"><summary>Onde ficam o CORS e o limite de requisições?</summary><div class="answer"><p>Ambos em <code>backend/src/app.js</code>: <code>cors({ origin … })</code> compara a origem com <code>ctx.config.origens</code>, e <code>app.use("/api", limitadores.geral)</code> aplica o limite geral. Limites mais rígidos para rotas sensíveis são passados a <code>rotasAutenticacao(limitadores)</code> (definidos em <code>middleware/limites.js</code>).</p></div></details>
+        <details class="qa"><summary>Por que há <code>trust proxy</code> no <code>app.js</code>?</summary><div class="answer"><p>No Render a API fica atrás de um proxy. Sem essa opção, todos os pedidos pareceriam vir do mesmo IP (o do proxy) e o limitador de taxa trataria todos os usuários como um só. Com <code>trust proxy: 1</code>, o Express lê o IP real do cabeçalho <code>X-Forwarded-For</code>.</p></div></details>
+        <details class="qa"><summary>Qual é a rota usada para verificar se o servidor está saudável? Por que ela consulta o banco?</summary><div class="answer"><p><code>GET /api/health</code> (<code>sistemaController.saude</code>) faz <code>db.command({ ping: 1 })</code> e responde <code>200</code> ou <code>503</code>. O Render usa essa rota como health check; consultar o banco evita marcar como saudável uma API que está no ar mas sem conexão com o MongoDB.</p></div></details>
+        <details class="qa"><summary>Onde a senha é transformada em hash? O que é o “hash fictício” do login?</summary><div class="answer"><p>Em <code>services/autenticacao.js</code>, com <code>bcrypt.hash(senha, CUSTO_BCRYPT)</code>. No login, quando o e-mail não existe, o código ainda executa <code>bcrypt.compare</code> contra um hash fictício para que o tempo de resposta seja parecido com o de uma conta real; isso dificulta descobrir quais e-mails têm cadastro por diferença de tempo.</p></div></details>
+        <details class="qa"><summary>Onde são criados os índices do MongoDB e para que servem?</summary><div class="answer"><p>Em <code>backend/src/config/banco.js</code>, na inicialização. Exemplos: <code>users.email</code> único (impede duplicidade), <code>groups.members</code> (acelera “meus grupos”), <code>messages { groupId, createdAt }</code> (histórico do chat ordenado) e índices TTL em <code>authTokens.expiresAt</code> e <code>messages.expiresAt</code>, que removem documentos vencidos automaticamente.</p></div></details>
+        <details class="qa"><summary>Como uma página sabe qual classe iniciar e onde isso é feito?</summary><div class="answer"><p>Em <code>js/main.js</code>: lê <code>document.body.dataset.pagina</code>, busca a classe em <code>Aplicacao.PAGINAS</code>, faz <code>import(`./paginas/${classe}.js`)</code> e chama <code>new modulo[classe]().iniciar()</code>.</p></div></details>
+        <details class="qa"><summary>Onde o código Python do jogador é executado e como o travamento é tratado?</summary><div class="answer"><p><code>ExecutorPython.executar</code> envia uma mensagem ao <code>PyodideWorker.js</code>. Um <code>setTimeout</code> de <code>TEMPO_MAXIMO_MS = 6000</code> roda na thread principal: se estourar, o Worker é terminado (<code>terminate()</code>) e descartado, e o resultado é <code>tempo_esgotado</code>. A próxima execução cria um Worker novo.</p></div></details>
+        <details class="qa"><summary>Como o front evita mostrar dados antigos quando duas respostas chegam fora de ordem?</summary><div class="answer"><p>Em <code>TempoReal.observar</code>, cada carregamento incrementa um contador <code>versao</code>; ao terminar, só aplica o resultado se <code>minha === versao</code>. Respostas mais velhas que chegam depois são ignoradas.</p></div></details>
+        <details class="qa"><summary>Como os testes sobem a API sem usar o banco real?</summary><div class="answer"><p><code>criarApp(ctx)</code> recebe as dependências por parâmetro. Os testes constroem um <code>ctx</code> com <code>mongodb-memory-server</code> e e-mail falso, sobem o app numa porta local e fazem requisições HTTP reais. O código dos services é o mesmo de produção.</p></div></details>
+        <details class="qa"><summary>Por que o servidor estático e a API ficam em domínios diferentes e o que isso muda?</summary><div class="answer"><p>O front é servido como arquivos estáticos e a API roda no Render. Como são origens diferentes, o navegador exige CORS na API e impede o uso simples de cookies de sessão entre as duas; por isso a sessão é um token enviado em cabeçalho. É também a razão do JWT estar no <code>localStorage</code>.</p></div></details>
+      </div>
+      <h3>Trabalho, resultados e limites</h3>
+      <div class="qa-list">
+        <details class="qa"><summary>Por que escolher um Escape Room para ensinar programação?</summary><div class="answer"><p>A mecânica transforma exercícios em objetivos contextualizados: observar, formular hipótese, testar código e colaborar para avançar. A proposta é aproximar prática e conteúdo, não substituir o ensino sistemático de programação.</p></div></details>
+        <details class="qa"><summary>O que o Kanban acrescenta ao desenvolvimento?</summary><div class="answer"><p>Visualiza tarefas e fluxo de trabalho para a equipe acompanhar pendências, trabalho em andamento e itens concluídos, além de revelar bloqueios. Trello é citado no documento acadêmico como suporte ao quadro.</p></div></details>
+        <details class="qa"><summary>O que mudou entre a proposta escrita e a versão do software?</summary><div class="answer"><p>A proposta inicial menciona Firebase como parte da arquitetura planejada. O README e o código atuais descrevem uma migração para API própria (Express), MongoDB e JWT/bcrypt, preservando Firebase Hosting e suporte limitado a migração legada. Apresentem isso como evolução, não como se as duas arquiteturas fossem simultaneamente o banco principal.</p></div></details>
+        <details class="qa"><summary>Quais são as limitações que vocês reconhecem?</summary><div class="answer"><p>Entre as documentadas: Pyodide baixa runtime do CDN e roda no cliente; SSE usa estado em memória e exige instância única; hospedagem grátis pode hibernar; recursos de e-mail dependem de configuração externa; funcionalidades do documento antigo não necessariamente correspondem à página inicial atual. Confirmem quais continuam aplicáveis na versão final.</p></div></details>
+      </div>
+    </section>
+
+    <section class="section" id="glossario" data-title="Glossário rápido">
+      <div class="section-head"><span class="section-number">28</span><div><h2>Glossário rápido</h2><p class="lede">Definições curtas para falar com clareza durante a apresentação.</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Termo</th><th>Explicação simples</th></tr></thead><tbody><tr><td>Front-end</td><td>Parte que roda no navegador e apresenta a interface.</td></tr><tr><td>Back-end</td><td>Serviço do servidor que processa requisições e aplica regras.</td></tr><tr><td>Endpoint</td><td>Endereço/método específico de uma operação da API.</td></tr><tr><td>Middleware</td><td>Função intermediária no processamento HTTP.</td></tr><tr><td>Promise / async</td><td>Representação de operação futura; <code>await</code> espera seu resultado sem bloquear todo o navegador.</td></tr><tr><td>Hash</td><td>Resultado de função criptográfica; bcrypt é usado para guardar senhas com salt e custo deliberado.</td></tr><tr><td>JWT</td><td>Token assinado que transmite claims de sessão entre cliente e servidor.</td></tr><tr><td>Índice</td><td>Estrutura do banco que acelera busca e pode impor unicidade/expiração.</td></tr><tr><td>SSE</td><td>Fluxo HTTP de eventos do servidor para o cliente.</td></tr><tr><td>Web Worker</td><td>Contexto de execução JavaScript separado da thread principal da interface.</td></tr><tr><td>WebAssembly</td><td>Formato de execução baixo nível no navegador; o Pyodide o usa para rodar Python.</td></tr><tr><td>CDN</td><td>Rede que distribui arquivos de bibliotecas e outros recursos pela internet.</td></tr><tr><td>Seed / semente</td><td>Valor inicial usado por um gerador pseudoaleatório para reproduzir uma sequência.</td></tr><tr><td>Hotspot</td><td>Área interativa posicionada sobre um objeto/cena visual do jogo.</td></tr><tr><td>Estado de domínio</td><td>Informação que representa a situação atual, como jogadores, pistas, enigmas e status.</td></tr><tr><td>TTL</td><td>Tempo de vida; índices TTL removem documentos vencidos automaticamente.</td></tr></tbody></table></div>
+      <h3>Fontes consultadas dentro do projeto</h3><ul><li><code>README.md</code> — arquitetura, stack, endpoints, execução, testes, segurança e deploy.</li><li><code>backend/package.json</code> e <code>render.yaml</code> — dependências, scripts e serviço hospedado.</li><li><code>js/main.js</code>, <code>js/nucleo/Api.js</code>, <code>js/nucleo/TempoReal.js</code>, <code>js/servicos/Partida.js</code> — arquitetura cliente e domínio do jogo.</li><li><code>js/nucleo/ExecutorPython.js</code>, <code>js/nucleo/PyodideWorker.js</code> — execução de Python no navegador.</li><li><code>backend/src/app.js</code>, <code>backend/src/services/partidas.js</code>, <code>backend/src/services/autenticacao.js</code> — API, regras da partida e autenticação.</li><li><code>backend/test/</code> — testes de comportamento da API.</li><li><code>ESCAPE ROOM - PFC (1).docx</code> — proposta acadêmica inicial e metodologia; algumas descrições são de etapa anterior.</li></ul>
+      <a class="back-top" href="#inicio">↑ Voltar ao início</a>
+    </section>
+    <footer class="footer">Guia de estudo local para os estudantes do PFC Escape.py. O conteúdo explica o código e documentos encontrados nesta versão do repositório; em caso de diferença, confirmem a implementação e a versão que será apresentada.</footer>
+  </article>
+</main>
+</div>
+<script>
+(() => {
+  const body = document.body;
+  const search = document.getElementById('busca');
+  const nav = document.getElementById('navegacao');
+  const sections = [...document.querySelectorAll('.section')];
+  const noResults = document.getElementById('sem-resultados');
+  const menu = document.getElementById('menu-toggle');
+  const theme = document.getElementById('tema-toggle');
+  const saved = localStorage.getItem('escape-guia-tema');
+  if (saved === 'escuro') document.documentElement.dataset.tema = 'escuro';
+  const updateThemeLabel = () => { const dark = document.documentElement.dataset.tema === 'escuro'; theme.textContent = dark ? 'Tema: escuro' : 'Tema: claro'; document.querySelector('meta[name="theme-color"]').content = dark ? '#171b18' : '#f6f5f1'; };
+  updateThemeLabel();
+  theme.addEventListener('click', () => { const next = document.documentElement.dataset.tema === 'escuro' ? 'claro' : 'escuro'; document.documentElement.dataset.tema = next; localStorage.setItem('escape-guia-tema', next); updateThemeLabel(); });
+  menu.addEventListener('click', () => { const open = body.classList.toggle('menu-open'); menu.setAttribute('aria-expanded', String(open)); menu.setAttribute('aria-label', open ? 'Fechar navegação' : 'Abrir navegação'); });
+  document.addEventListener('click', e => { if (body.classList.contains('menu-open') && !e.target.closest('.sidebar') && !e.target.closest('#menu-toggle')) { body.classList.remove('menu-open'); menu.setAttribute('aria-expanded','false'); } });
+  nav.addEventListener('click', e => { if (e.target.closest('a')) { body.classList.remove('menu-open'); menu.setAttribute('aria-expanded','false'); } });
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLocaleLowerCase('pt-BR');
+    let count = 0;
+    sections.forEach(section => {
+      const show = !q || section.innerText.toLocaleLowerCase('pt-BR').includes(q);
+      section.classList.toggle('hidden-search', !show);
+      count += show ? 1 : 0;
+    });
+    nav.querySelectorAll('.nav-group').forEach(group => {
+      const links = [...group.querySelectorAll('a')];
+      group.classList.toggle('hidden-search', q && !links.some(link => { const target = document.querySelector(link.getAttribute('href')); return target && !target.classList.contains('hidden-search'); }));
+      links.forEach(link => { const target = document.querySelector(link.getAttribute('href')); link.classList.toggle('hidden-search', !!q && (!target || target.classList.contains('hidden-search'))); });
+    });
+    noResults.style.display = count ? 'none' : 'block';
+  });
+  const links = [...nav.querySelectorAll('a')];
+  const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    links.forEach(link => link.classList.toggle('active', link.hash === `#${entry.target.id}`));
+  }), { rootMargin: '-18% 0px -70% 0px' });
+  sections.forEach(section => observer.observe(section));
+  document.querySelectorAll('.copy').forEach(button => button.addEventListener('click', async () => {
+    const code = button.parentElement.querySelector('code').innerText;
+    try { await navigator.clipboard.writeText(code); button.textContent = 'Copiado'; setTimeout(() => button.textContent = 'Copiar', 1300); }
+    catch { button.textContent = 'Selecione o código'; setTimeout(() => button.textContent = 'Copiar', 1500); }
+  }));
+})();
+</script>
+</body>
+</html>
