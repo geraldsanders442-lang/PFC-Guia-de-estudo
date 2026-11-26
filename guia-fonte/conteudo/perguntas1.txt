@@ -1,0 +1,232 @@
+=== arq-visao | Arquitetura | alta
+P: Expliquem a arquitetura do Escape.py de ponta a ponta.
+Q: Se vocês têm uma visão do sistema inteiro e sabem separar responsabilidades.
+O: É uma aplicação cliente-servidor. O front é estático, em HTML, CSS e módulos JavaScript. Ele chama uma API própria em Node.js com Express, e só ela acessa o MongoDB Atlas. Quando algo muda, a API avisa por Server-Sent Events e o front busca os dados de novo. O Python do jogador roda no navegador com Pyodide, dentro de um Web Worker.
+E: Três lugares executam código: navegador (tela e regras de apresentação), Worker (Python) e servidor (autorização, regras e persistência). A divisão segue um princípio: o que precisa ser verdade para todos fica no servidor. A exceção honesta é a correção do Python, que fica no cliente. Ver [diagrama](diagramas.html#arquitetura).
+C: backend/src/server.js :: const ctx = { ;; backend/src/app.js :: export function criarApp
+S: Onde ficam as regras de negócio? -> Em `backend/src/services/`. O front repete algumas para dar resposta rápida, mas quem decide é o servidor.
+S: Tem camada repository? -> Não. Os services usam o driver do MongoDB diretamente.
+D: Abra o jogo com a aba Rede: mostre os arquivos estáticos, as chamadas `/api/...` e a requisição `events` que fica pendente.
+
+=== arq-camadas | Arquitetura | alta
+P: Qual a diferença entre rota, middleware, controller e service no projeto de vocês?
+Q: Se vocês entendem a separação na prática e não só a definição.
+O: A rota liga método e caminho a uma fila de funções. Os middlewares verificam coisas comuns, como token e e-mail. O controller lê a requisição e escolhe o status da resposta. O service aplica a regra e fala com o banco.
+E: Em `POST /games/:gid/start`: `rotasPartidas` aplica `jogador` (três middlewares); `partidasController.iniciar` chama `iniciarPartida` e responde 204; o service exige ser dono, calcula o fim e faz `updateOne`. A checagem de dono ou membro fica no service porque depende do documento do grupo.
+C: backend/src/routes/partidas.js :: export function rotasPartidas ;; backend/src/controllers/partidasController.js :: export async function iniciar ;; backend/src/services/partidas.js :: export async function iniciarPartida
+S: Por que o controller não tem try/catch? -> No Express 5 a Promise rejeitada vai sozinha para `tratarErros`.
+S: A autorização por grupo é um middleware? -> Não. São as funções `grupoComoMembro` e `grupoComoDono`, chamadas pelos services.
+D: Siga um endpoint nos três arquivos, ao vivo.
+
+=== arq-ctx | Arquitetura | média | dificil
+P: Como os services acessam o banco sem importar uma conexão global?
+Q: Injeção de dependências e testabilidade.
+O: O `server.js` monta um objeto `ctx` com configuração, banco, e-mail, Google e tempo real. Ele é entregue a `criarApp`, vai para `req.ctx` e é passado aos services. Nos testes, entregamos um `ctx` com banco em memória e e-mail falso.
+E: Isso é injeção de dependências manual. O mesmo código roda em produção e em teste, e um service pode ser testado com um objeto falso no lugar do banco.
+C: backend/src/server.js :: const ctx = { ;; backend/test/ajuda.js :: const ctx = {
+S: Qual o ponto fraco dessa abordagem? -> Sem tipos, nada obriga o `ctx` falso a ter o mesmo formato do real.
+D: Compare os dois trechos lado a lado.
+
+=== arq-escala | Arquitetura | média | dificil
+P: Se vocês subirem duas instâncias da API, o que quebra?
+Q: Se vocês sabem onde existe estado em memória.
+O: O tempo real. As conexões SSE ficam num `Map` dentro do processo; quem estiver conectado na instância B não recebe o aviso gerado na A. A presença e os contadores de rate limit também ficariam separados.
+E: Para escalar seria preciso um canal compartilhado (por exemplo, Redis Pub/Sub ou change streams do MongoDB) e um armazenamento compartilhado no limitador. Os dados do jogo já estão no banco e as condições atômicas continuariam valendo.
+C: backend/src/services/tempoReal.js :: export function criarTempoReal ;; backend/src/middleware/limites.js :: function limitador
+S: E se o servidor reiniciar? -> As conexões caem, o cliente reconecta com espera crescente e recarrega tudo; nenhum dado de partida se perde.
+D: Reinicie a API local e mostre o front reconectando.
+
+=== js-async | JavaScript | alta
+P: Expliquem async, await e Promise usando uma função do projeto.
+Q: Domínio real do JavaScript assíncrono.
+O: Em `Api.requisitar`, `fetch` devolve uma Promise, um resultado que ainda vai chegar. O `await` pausa só aquela função; a página continua respondendo. Quando a resposta chega, a função continua e usamos `try/catch` para falha de rede.
+E: O JavaScript tem uma thread principal e um event loop. A rede é feita pelo navegador; ao terminar, a continuação entra na fila. Detalhe importante: `fetch` não rejeita em 404 ou 500, por isso testamos `resposta.ok`. Há um segundo `await` em `resposta.json()`.
+C: js/nucleo/Api.js :: static async requisitar
+S: O que acontece se esquecer o await? -> A variável recebe a Promise, não o valor; `resposta.status` seria indefinido.
+S: Onde vocês criam uma Promise manualmente? -> Em `ExecutorPython`, para transformar mensagens do Worker em algo que se pode aguardar.
+D: Na aba Rede, use a limitação "3G lento" e mostre que a tela segue respondendo.
+
+=== js-observar | JavaScript | alta | dificil
+P: Como vocês evitam que uma resposta antiga sobrescreva uma mais nova?
+Q: Condição de corrida no cliente e closures.
+O: A função `observar` numera cada carregamento. Quando a resposta chega, só é aplicada se o número ainda for o mais recente. Também há uma flag para ignorar respostas depois que a tela foi desmontada.
+E: `versao` e `ativo` são variáveis da função externa que a função `atualizar` continua enxergando: isso é uma closure. A função devolvida cancela a assinatura.
+C: js/nucleo/TempoReal.js :: observar(canais, carregar
+S: A requisição antiga é cancelada? -> Não; ela termina e o resultado é descartado.
+D: Mostre dois avisos seguidos no código e explique a comparação `minha === versao`.
+
+=== js-modulos | JavaScript | média
+P: Como uma página sabe qual JavaScript executar?
+Q: Módulos ES e importação dinâmica.
+O: Cada HTML tem `data-pagina` no `body`. O `main.js` lê esse valor, procura a classe num mapa e faz `import()` dinâmico do arquivo; depois instancia e chama `iniciar`.
+E: `type="module"` dá escopo próprio a cada arquivo e permite `import` e `export`. A importação dinâmica devolve uma Promise e carrega só o necessário. O `await` no topo do módulo é permitido em ES Modules.
+C: js/main.js :: static async iniciar() ;; js/paginas/Pagina.js :: async iniciar()
+S: O que é o ciclo preparar e montar? -> `preparar` decide se o usuário pode ficar na página; `montar` liga a interface.
+D: Aba Rede filtrada por JS ao abrir `login.html` e depois `sala.html`.
+
+=== js-dom | JavaScript | média
+P: Como o JavaScript captura o clique e atualiza a tela?
+Q: Eventos e manipulação do DOM.
+O: Registramos ouvintes com `addEventListener`. No chat, o evento `submit` chama `preventDefault` para não recarregar, envia a mensagem e limpa o campo. A lista é redesenhada criando elementos e preenchendo `textContent`.
+E: O DOM é a árvore de objetos da página. `createElement`, `appendChild` e `textContent` montam a interface. Usamos `innerHTML` só em modelos fixos; dados de usuários entram como texto.
+C: js/componentes/PainelChat.js :: async #enviar(ev) ;; js/componentes/Chat.js :: renderizar(mensagens, uid, agora)
+S: Por que não usar um framework? -> Decisão por menos dependências e sem etapa de build; o custo é redesenhar o DOM manualmente.
+D: Envie uma mensagem com tags HTML e mostre o texto literal.
+
+=== js-estado | JavaScript | média
+P: Onde fica o estado da partida no front?
+Q: Gerência de estado sem framework.
+O: A classe `Partida` guarda o `EstadoPartida` recebido da API e uma lista de ouvintes. Quando chega um estado novo, ela monta os enigmas, ajusta o cronômetro e notifica a tela. Contadores de dica e rascunhos ficam só na memória.
+E: É um padrão observador: `assinar` registra funções e `#notificar` as chama. `#aplicar` é o único ponto de entrada do estado. Os campos com `#` são privados.
+C: js/servicos/Partida.js :: #aplicar(estado) { ;; js/servicos/Partida.js :: contador(chave, codigoInicial
+S: O que se perde ao recarregar a página? -> Rascunhos, número de dicas e tentativas. O progresso gravado permanece.
+D: Use uma dica, recarregue e mostre o contador zerado (e admita a limitação).
+
+=== py-onde | Python | alta
+P: Em que parte do projeto vocês usam Python, se o back-end é JavaScript?
+Q: Clareza sobre o papel do Python.
+O: Python é o conteúdo ensinado. O sistema é JavaScript. O código do jogador é Python e é executado no navegador pelo Pyodide. Há também um trecho Python nosso, o avaliador, que compila, executa e testa a resposta.
+E: O avaliador é uma string dentro do Worker (`HARNESS`). Ele usa os módulos `ast`, `json`, `io` e `contextlib` da biblioteca padrão.
+C: js/nucleo/PyodideWorker.js :: def rodar(codigo ;; js/nucleo/PyodideWorker.js :: const pronto =
+S: Existe arquivo .py no repositório? -> Não; o código Python está embutido no Worker.
+D: Resolva um enigma e mostre o console.
+
+=== py-harness | Python | alta | dificil
+P: O que exatamente o avaliador Python faz com o código do aluno?
+Q: Profundidade na parte central do jogo.
+O: Primeiro faz o parse para detectar erro de sintaxe. Se a última linha for uma expressão, imprime o valor, como no REPL. Executa num dicionário novo, procura a função, roda os testes comparando tipo e valor e, se todos passam, calcula o código do mecanismo.
+E: `ast.parse` e `compile` geram o código; `exec` roda em `ns`; `redirect_stdout` captura os `print` (até 2000 caracteres). Cada teste recebe uma cópia dos argumentos, e tuplas viram listas. O retorno é um JSON com `fase`: `sintaxe`, `execucao`, `funcao_ausente`, `teste`, `ok` ou `executado`.
+C: js/nucleo/PyodideWorker.js :: 33-58 ;; js/nucleo/PyodideWorker.js :: 60-99
+S: Como acham a linha do erro? -> Percorrendo o traceback e pegando o quadro cujo arquivo é `<seu_codigo>`.
+S: Por que comparar o tipo? -> Para `"5"` não passar por `5` e `True` não passar por `1`.
+D: Envie sintaxe errada, divisão por zero e retorno do tipo errado.
+
+=== py-enigmas | Python | média
+P: Os enigmas são fixos? Como são gerados os testes?
+Q: Geração procedural e determinismo.
+O: Há um catálogo de modelos por conceito. A semente escolhe modelos e parâmetros; os casos de teste e o resultado esperado saem de uma função de referência. A mesma semente gera a mesma sala para toda a equipe.
+E: `Enigma` cria um gerador pseudoaleatório com a variante, sorteia parâmetros, gera 6 casos, calcula o esperado com `modelo.f` e marca os 3 primeiros como visíveis. O gerador é o mulberry32, com semente misturada por FNV-1a.
+C: js/modelos/Enigma.js :: constructor({ chave, modelo ;; js/nucleo/Aleatorio.js :: proximo() {
+S: O aluno consegue ver a resposta? -> Sim, no console, porque tudo é calculado no navegador.
+S: Por que não usar Math.random? -> Ele não aceita semente; cada jogador veria uma sala diferente.
+D: Abra `ModelosEnigma.js` e mostre um modelo completo.
+
+=== api-oque | APIs | alta
+P: O que é uma API e por que vocês fizeram uma própria?
+Q: Conceito aplicado e justificativa.
+O: API é o conjunto de operações que o servidor oferece ao cliente. Fizemos a nossa para concentrar autenticação, permissões e regras num lugar que o jogador não controla, e para a credencial do banco nunca ir ao navegador.
+E: A versão inicial usava Firebase direto do navegador com Security Rules. Migramos para Express e MongoDB; o README registra a migração. As rotas seguem recursos (`/groups`, `/games`) e respostas em JSON.
+C: backend/src/app.js :: app.use("/api", limitadores.geral) ;; js/nucleo/Api.js :: static get(caminho)
+S: Dá para usar a API sem o site? -> Sim, com um token válido; por isso toda regra precisa estar no servidor.
+D: Chame `/api/health` no navegador.
+
+=== api-externas | APIs | alta
+P: Com quais APIs externas o sistema se integra e o que cada uma recebe?
+Q: Saber listar integrações, como foi cobrado no simpósio.
+O: Brevo para enviar e-mails, Google para login, a API do Firebase apenas para migrar contas antigas e DiceBear para os avatares. Também carregamos bibliotecas de CDNs.
+E: O Brevo recebe nome e e-mail pela API HTTP, com a chave no servidor. O Google participa via OAuth 2.0 e OpenID Connect. O Firebase recebe e-mail e senha somente na primeira entrada de uma conta antiga. A DiceBear recebe estilo e semente.
+C: backend/src/services/email.js :: async enviar( ;; backend/src/services/google.js :: async trocarCodigo ;; backend/src/services/firebaseLegado.js :: async entrarComSenha ;; js/nucleo/Avatar.js :: get url()
+S: E se o Brevo cair? -> O cadastro cria a conta e informa que o e-mail não saiu; há reenvio. Sem configuração, o cadastro responde 503.
+S: Por que HTTP e não SMTP? -> O README registra que o plano gratuito do Render bloqueia SMTP.
+D: Mostre o e-mail recebido e o trecho que chama `api.brevo.com`.
+
+=== api-erros | APIs | média
+P: Como a API informa erros e como o front os trata?
+Q: Padronização de respostas.
+O: Os services lançam `ErroHttp` com status, código e mensagem. Um middleware final transforma em JSON. No front, `Api.requisitar` converte em `ErroApi` e a tela mostra a mensagem.
+E: Erros previstos mantêm o status; JSON inválido vira 400; qualquer outro é registrado no console e responde 500 genérico, sem detalhes internos. Falha de rede vira `SEM_CONEXAO`.
+C: backend/src/utils/erros.js :: export class ErroHttp ;; backend/src/middleware/erros.js :: export function tratarErros ;; js/nucleo/Api.js :: export class ErroApi
+S: Por que ter um código além da mensagem? -> O programa decide pelo código estável; a mensagem pode mudar.
+D: Derrube a API local e tente uma ação.
+
+=== http-metodos | HTTP e REST | alta
+P: Quando usam GET, POST, PUT, PATCH e DELETE? Mostrem um de cada.
+Q: Semântica HTTP.
+O: GET lê grupos; POST cria ou executa ação, como iniciar a partida; PUT grava a sala inteira; PATCH altera campos do perfil; DELETE remove integrante ou grupo.
+E: GET deveria ser sem efeito; há uma exceção a admitir: a listagem de um admin cria o grupo DEMO se não existir. PUT em `/rooms/:id` é idempotente. Ações como `/start` são POST porque não representam substituir um recurso.
+C: backend/src/routes/grupos.js :: export function rotasGrupos ;; backend/src/routes/usuarios.js :: export function rotasUsuarios ;; backend/src/routes/sistema.js :: export function rotasSistema
+S: A API é REST puro? -> É REST no estilo: recursos e métodos, com algumas rotas de ação e sem hipermídia.
+D: Aba Rede mostrando método e status.
+
+=== http-status | HTTP e REST | média
+P: Qual a diferença entre 401, 403 e 409 no sistema?
+Q: Uso correto dos status.
+O: 401 é "não sei quem você é", sem token ou com token inválido. 403 é "sei quem é, mas não pode". 409 é conflito com o estado atual, como resolver um enigma já resolvido.
+E: Também usamos 200, 201, 204, 400, 404, 413, 429, 500 e 503.
+C: backend/src/utils/erros.js :: 15-21
+S: E o 429? -> Muitas requisições: limitador, intervalo do chat ou criação de grupo.
+D: Provoque 401 e 403 pelo console.
+
+=== http-cors | HTTP e REST | alta
+P: O que é CORS e o que ele não protege?
+Q: Equívoco comum sobre segurança.
+O: É a regra do navegador sobre quais origens podem ler respostas de outro domínio. Nossa API aceita só as origens de `FRONTEND_URL`. Não substitui autenticação: um script fora do navegador ignora CORS.
+E: Requisições sem cabeçalho Origin passam no CORS e dependem do token. Antes de chamadas com `Authorization`, o navegador faz um preflight OPTIONS, que guardamos por 600 s.
+C: backend/src/app.js :: app.use(cors({
+S: Por que aceitar sem Origin? -> Para health check, testes e navegação direta, que não têm Origin.
+D: `curl -H "Origin: https://outro.exemplo" <api>/health` responde 403.
+
+=== mdb-porque | MongoDB | média
+P: Por que MongoDB e não um banco relacional?
+Q: Justificativa de tecnologia, com contrapartidas.
+O: O estado da partida é um documento com vetores e mapas que variam com a dificuldade, e atualizamos tudo com uma operação atômica em um documento. A contrapartida é não ter chaves estrangeiras nem junções: a integridade fica no código.
+E: `games.config` e `solved` mudam de formato conforme a sala. Em relacional seriam várias tabelas e transações. Perdemos restrições declarativas; compensamos com índices únicos e exclusão em cascata manual.
+C: backend/src/services/partidas.js :: const partida = { ;; backend/src/services/contas.js :: export async function excluirConta
+S: MongoDB não tem transação? -> Tem transações multi-documento; o projeto não as usa.
+D: Mostre um documento de `games` no Atlas.
+
+=== mdb-indices | MongoDB | alta
+P: Que índices existem e para que servem?
+Q: Desempenho e integridade.
+O: Há índices únicos para e-mail, username e identidades externas; índices de busca para grupos, convites, mensagens, partidas e histórico; e índices TTL que apagam tokens e mensagens vencidos.
+E: Parciais evitam conflito entre documentos sem o campo. O índice de `players` é multikey. O único `(groupId, createdAt)` impede histórico duplicado; o parcial `demo: true` garante um só grupo DEMO.
+C: backend/src/config/banco.js :: export async function criarIndices
+S: O TTL apaga na hora? -> Não; uma rotina do MongoDB roda periodicamente. Por isso as consultas também filtram `expiresAt`.
+S: Como provam que o índice é usado? -> Com `explain()`: nas consultas de histórico e partidas apareceu `IXSCAN`.
+D: No Atlas, aba Indexes; ou `db.gameHistory.find({players:"<id>"}).explain()`.
+
+=== mdb-injecao | MongoDB | alta | dificil
+P: Como evitam NoSQL Injection?
+Q: Conhecimento do ataque específico do MongoDB.
+O: Conferimos o tipo antes de consultar. Se alguém mandar um objeto como `{"$ne": null}` no lugar do e-mail, a função `texto` rejeita com 400. As chaves que viram caminho de campo seguem uma expressão regular.
+E: O ataque troca um valor por um operador. `texto`, `objectId`, `inteiro` e checagens `typeof` garantem primitivos. `ID_CHAVE` impede pontos e cifrões em `found.<chave>`. É validação manual: um campo novo sem validar abriria brecha. Um caso fraco conhecido: `difficulty` aceita lista.
+C: backend/src/utils/validacao.js :: export function texto( ;; backend/src/utils/validacao.js :: export function objectId ;; backend/src/services/partidas.js :: const chaveValida
+S: Usam alguma biblioteca de schema? -> Não.
+D: `POST /api/auth/login` com objetos: resposta 400 (há teste "rejeita e-mail como objeto").
+
+=== per-duas | Persistência | alta
+P: Por que existem as coleções games e gameHistory?
+Q: Se entendem o próprio modelo de dados.
+O: `games` é o estado vivo da partida atual, um documento por grupo, apagado quando começa outra. `gameHistory` é o resumo permanente de cada partida encerrada, usado nas estatísticas. Separamos para jogar de novo sem perder o resultado.
+E: Ver a [comparação completa](api-banco.html#jogos). `games` guarda configuração, pistas e autores; `gameHistory` guarda totais e sobrevive à exclusão do grupo.
+C: backend/src/services/partidas.js :: export async function criarPartida ;; backend/src/services/historico.js :: export async function arquivarPartida(ctx, partida)
+S: Quando o histórico é gravado? -> Na conclusão, na desistência ou expiração e antes de excluir o grupo.
+S: Pode duplicar? -> Não: upsert com `$setOnInsert` e índice único em `(groupId, createdAt)`.
+D: Termine uma partida, clique em "Nova partida" e mostre `games` vazio e `gameHistory` com o registro.
+
+=== per-atomico | Persistência | alta | dificil
+P: Dois jogadores resolvem o mesmo enigma no mesmo instante. O que acontece no banco?
+Q: Concorrência e atomicidade.
+O: A gravação tem a condição no próprio filtro: só altera se o enigma ainda não estiver resolvido. O MongoDB aplica isso atomicamente no documento. Um recebe 204 e o outro 409, que o front trata como já resolvido.
+E: Se fosse ler, testar em JavaScript e gravar, os dois passariam pelo teste. Com `updateOne` condicional, `modifiedCount` indica quem venceu. O mesmo vale para vagas, início e pistas.
+C: backend/src/services/partidas.js :: export async function registrarEnigma ;; js/servicos/ServicoPartida.js :: async registrarResolucao
+S: Quem recebe o crédito? -> Quem teve a gravação aceita, no campo `by`.
+D: Teste executado: duas chamadas simultâneas resultaram em 204 e 409.
+
+=== per-falha | Persistência | média | dificil
+P: Se o servidor cair no meio da exclusão de uma conta ou do arquivamento, o que acontece?
+Q: Consistência entre coleções.
+O: Pode ficar pela metade. São várias operações sem transação. Repetir a exclusão continua o processo, e o arquivamento é idempotente, mas não há garantia automática.
+E: A melhoria é usar uma transação do MongoDB (disponível em replica set, como no Atlas) ou uma rotina de reconciliação.
+C: backend/src/services/grupos.js :: export async function apagarGrupo ;; backend/src/services/historico.js :: export async function arquivarPartidaDoGrupo
+S: Um log de auditoria que falha cancela a ação? -> Não; o erro é apenas registrado no console.
+D: Mostre a ordem das operações no código.
+
+=== per-chat | Persistência | média
+P: As mensagens ficam salvas para sempre?
+Q: Ciclo de vida do dado.
+O: Não. Cada mensagem recebe `expiresAt` de 24 horas e um índice TTL a remove. A leitura também filtra as vencidas e limita a 60.
+E: O filtro na consulta cobre o intervalo até a limpeza do TTL. Excluir o grupo apaga as mensagens na hora; excluir a conta não apaga as mensagens ainda vigentes.
+C: backend/src/services/chat.js :: export async function listarMensagens ;; backend/src/config/banco.js :: db.collection("messages").createIndex({ expiresAt
+S: Dá para recuperar depois? -> Pela aplicação não. Backups do provedor não foram avaliados.
+D: Mostre `createdAt` e `expiresAt` no Atlas.

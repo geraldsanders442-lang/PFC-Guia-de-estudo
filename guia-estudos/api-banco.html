@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f5f1">
+<title>API, middlewares e banco · Escape.py</title>
+<link rel="stylesheet" href="assets/guia.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar" aria-label="Navegação do guia">
+  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">E</span><span><strong>Escape.py</strong><small>Guia de estudos do projeto</small></span></a>
+  <label class="small" for="busca" style="display:block;margin-top:14px">Buscar em todo o guia</label>
+  <input id="busca" class="nav-search" type="search" placeholder="Ex.: JWT, gameHistory, SSE…" autocomplete="off">
+  <div id="achados" hidden></div>
+  <nav id="navegacao">
+    <div class="nav-group"><p class="nav-title">Páginas</p><div class="nav-list paginas"><a href="index.html"><b>Guia base</b><small>Fundamentos e visão geral</small></a><a href="codigo.html"><b>Código por funcionalidade</b><small>Do clique ao resultado</small></a><a href="api-banco.html" class=atual aria-current=page><b>API, middlewares e banco</b><small>Endpoints, cadeia e MongoDB</small></a><a href="diagramas.html"><b>Diagramas e fluxos</b><small>Arquitetura e sequências</small></a><a href="seguranca.html"><b>Segurança, LGPD e limites</b><small>Ameaças, provas e lacunas</small></a><a href="testes.html"><b>Testes e demonstração</b><small>Comandos e roteiro ao vivo</small></a><a href="simposio.html"><b>O que a banca cobrou</b><small>Análise do simpósio</small></a><a href="simulado.html"><b>Simulado da banca</b><small>Perguntas e respostas</small></a></div></div>
+    <div class="nav-group"><p class="nav-title">Nesta página</p><div class="nav-list" id="locais"><a href="#api">API e cliente-servidor</a><a href="#endpoints">Todos os endpoints</a><a href="#exemplos">Requisições e respostas reais</a><a href="#middleware">Middlewares</a><a href="#colecoes">MongoDB: coleções e documentos</a><a href="#jogos">`games` × `gameHistory`</a><a href="#relacoes">Relacionamentos, consultas e isolamento</a></div></div>
+  </nav>
+  <div class="side-foot">Baseado no código do repositório Escape-Room-PFC, branch main, commit <a href="https://github.com/pfcumc2026/Escape-Room-PFC/tree/37cd1d6393ed8550972f173e519ec6925c65aec6">37cd1d6</a> (18/11/2026).</div>
+</aside>
+<main class="main" id="inicio">
+  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="menu-button" id="menu-toggle" aria-label="Abrir navegação" aria-expanded="false">☰</button><span class="crumb">Guia para a banca / API, middlewares e banco</span></div><div class="top-actions"><button class="icon-button" id="tema-toggle" type="button" aria-label="Alternar tema">Tema: claro</button><button class="icon-button" id="imprimir" type="button">Imprimir / PDF</button></div></header>
+  <article class="content">
+<header class="intro"><span class="eyebrow">Preparação para a banca</span><h1>API, middlewares e banco de dados</h1><p>Todos os endpoints, a cadeia de uma requisição e cada coleção do MongoDB.</p></header>
+
+<section class="section" id="api" data-title="API e cliente-servidor"><div class="section-head"><span class="section-number">01</span><div><h2>API e cliente-servidor</h2><p class="lede">O contrato entre o navegador e o servidor.</p></div></div>
+<p>Uma <strong>API</strong> é o conjunto de operações que um programa oferece a outro. A nossa é própria (Node.js + Express) porque as regras precisam rodar em um lugar que o jogador não controla e porque a senha do banco não pode ir para o navegador.</p>
+<div class="table-wrap"><table><thead><tr><th>Método</th><th>Uso na API</th><th>Exemplo real</th></tr></thead><tbody><tr><td>GET</td><td>ler, sem alterar</td><td><code>GET /api/groups</code> (exceção: nas listagens de um admin, o grupo DEMO é criado se não existir)</td></tr><tr><td>POST</td><td>criar ou executar uma ação</td><td><code>POST /api/games/:gid/start</code></td></tr><tr><td>PUT</td><td>gravar o recurso inteiro</td><td><code>PUT /api/rooms/:id</code></td></tr><tr><td>PATCH</td><td>alterar só alguns campos</td><td><code>PATCH /api/users/me</code></td></tr><tr><td>DELETE</td><td>remover</td><td><code>DELETE /api/groups/:id/members/:uid</code></td></tr></tbody></table></div>
+<h3>APIs externas realmente usadas</h3>
+<div class="table-wrap"><table><thead><tr><th>Serviço</th><th>Quem chama</th><th>Para quê</th></tr></thead><tbody><tr><td>Brevo (<code>api.brevo.com</code>)</td><td>servidor</td><td>e-mails de verificação e redefinição</td></tr><tr><td>Google OAuth 2.0 / OpenID Connect</td><td>servidor (e redirecionamento do navegador)</td><td>login com Google</td></tr><tr><td>Firebase Authentication e Firestore REST</td><td>servidor</td><td><strong>somente</strong> migração de contas antigas</td></tr><tr><td>DiceBear 9.x</td><td>navegador</td><td>imagem do avatar a partir de estilo e semente</td></tr><tr><td>CDNs (jsDelivr, unpkg, Google Fonts)</td><td>navegador</td><td>Bootstrap, Chart.js, QRCode.js, Pyodide, Lucide e fontes</td></tr></tbody></table></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/services/email.js#L9-L26" target="_blank" rel="noopener">backend/src/services/email.js · linhas 9–26</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">9</span>async enviar({ para, assunto, texto, html }) {
+<span class="ln">10</span>  if (!config) throw indisponivel(&quot;O envio de e-mails não está configurado no servidor.&quot;, &quot;EMAIL_INDISPONIVEL&quot;);
+<span class="ln">11</span>  const resposta = await fetchImpl(URL_BREVO, {
+<span class="ln">12</span>    method: &quot;POST&quot;,
+<span class="ln">13</span>    headers: { &quot;api-key&quot;: config.chave, &quot;content-type&quot;: &quot;application/json&quot;, accept: &quot;application/json&quot; },
+<span class="ln">14</span>    body: JSON.stringify({
+<span class="ln">15</span>      sender: { email: config.remetente, name: config.nome },
+<span class="ln">16</span>      to: [{ email: para }],
+<span class="ln">17</span>      subject: assunto,
+<span class="ln">18</span>      textContent: texto,
+<span class="ln">19</span>      htmlContent: html
+<span class="ln">20</span>    })
+<span class="ln">21</span>  });
+<span class="ln">22</span>  if (!resposta.ok) {
+<span class="ln">23</span>    console.error(&quot;[email] Brevo respondeu&quot;, resposta.status, await resposta.text().catch(() =&gt; &quot;&quot;));
+<span class="ln">24</span>    throw indisponivel(&quot;Não foi possível enviar o e-mail agora. Tente novamente em instantes.&quot;, &quot;EMAIL_FALHOU&quot;);
+<span class="ln">25</span>  }
+<span class="ln">26</span>}</code></pre></div></section>
+<section class="section" id="endpoints" data-title="Todos os endpoints"><div class="section-head"><span class="section-number">02</span><div><h2>Todos os endpoints</h2><p class="lede">Prefixo <code>/api</code>. &quot;Jogador&quot; = token + e-mail verificado + perfil completo.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Método e caminho</th><th>Quem</th><th>Resposta de sucesso</th></tr></thead><tbody><tr><td><code>GET /health</code></td><td>público</td><td><code>200 {status, banco, agora}</code> ou 503</td></tr><tr><td><code>GET /time</code></td><td>público</td><td><code>200 {now}</code></td></tr><tr><td><code>GET /events</code></td><td>token + e-mail</td><td>fluxo SSE</td></tr><tr><td><code>POST /auth/register</code></td><td>público, limite</td><td><code>201</code> sessão</td></tr><tr><td><code>POST /auth/login</code></td><td>público, limite</td><td>sessão ou próxima etapa</td></tr><tr><td><code>POST /auth/logout</code></td><td>token</td><td><code>204</code></td></tr><tr><td><code>POST /auth/email/verify</code></td><td>público, limite</td><td><code>200</code></td></tr><tr><td><code>POST /auth/email/resend</code></td><td>token, limite</td><td><code>200</code></td></tr><tr><td><code>POST /auth/password/forgot</code> e <code>/reset</code></td><td>público, limite</td><td><code>200</code></td></tr><tr><td><code>POST /auth/2fa/verify</code> e <code>/2fa/legacy/verify</code></td><td>desafio, limite</td><td>sessão</td></tr><tr><td><code>POST /auth/2fa/setup</code>, <code>/enable</code>, <code>/disable</code>, <code>/recovery-codes</code></td><td>token, limite</td><td><code>200</code></td></tr><tr><td><code>POST /auth/2fa/migration/setup</code> e <code>/enable</code></td><td>desafio, limite</td><td><code>200</code></td></tr><tr><td><code>GET /auth/google</code></td><td>público, limite</td><td><code>302</code></td></tr><tr><td><code>GET /auth/google/callback</code></td><td>público (<strong>sem</strong> limite)</td><td><code>302</code></td></tr><tr><td><code>POST /auth/google/exchange</code></td><td>código, limite</td><td>sessão</td></tr><tr><td><code>GET /users/me</code> · <code>DELETE /users/me</code></td><td>token</td><td><code>200</code> · <code>204</code></td></tr><tr><td><code>PATCH /users/me</code></td><td>token + e-mail</td><td><code>200</code></td></tr><tr><td><code>GET /users/me/stats</code></td><td>jogador</td><td><code>200</code></td></tr><tr><td><code>GET /users/username-available/:username</code></td><td>token + e-mail</td><td><code>200 {available}</code></td></tr><tr><td><code>GET /users/:uid</code> · <code>/users/:uid/presence</code></td><td>token + e-mail</td><td><code>200</code></td></tr><tr><td><code>GET /groups</code> · <code>POST /groups</code></td><td>jogador</td><td><code>200</code> · <code>201</code></td></tr><tr><td><code>GET /groups/:id</code></td><td>membro</td><td><code>200</code></td></tr><tr><td><code>DELETE /groups/:id</code></td><td>dono</td><td><code>204</code></td></tr><tr><td><code>POST /groups/:id/invite-code</code></td><td>dono</td><td><code>200 {inviteCode}</code></td></tr><tr><td><code>POST /groups/:id/join</code></td><td>jogador com código</td><td><code>200</code></td></tr><tr><td><code>DELETE /groups/:id/members/:uid</code></td><td>dono ou o próprio</td><td><code>204</code></td></tr><tr><td><code>GET</code> e <code>POST /groups/:id/invites</code></td><td>dono</td><td><code>200</code> · <code>201</code></td></tr><tr><td><code>GET</code> e <code>POST /groups/:id/messages</code></td><td>membro</td><td><code>200</code> · <code>201</code></td></tr><tr><td><code>GET /invites/received</code> · <code>/invites/sent</code></td><td>jogador</td><td><code>200</code></td></tr><tr><td><code>POST /invites/:id/response</code></td><td>convidado</td><td><code>204</code></td></tr><tr><td><code>DELETE /invites/:id</code></td><td>convidado ou remetente</td><td><code>204</code></td></tr><tr><td><code>GET /games/:gid</code></td><td>membro</td><td><code>200 {game}</code></td></tr><tr><td><code>POST /games/:gid</code> · <code>DELETE</code></td><td>dono</td><td><code>201</code> · <code>204</code></td></tr><tr><td><code>POST /games/:gid/players</code></td><td>membro</td><td><code>204</code></td></tr><tr><td><code>POST /games/:gid/start</code></td><td>dono</td><td><code>204</code></td></tr><tr><td><code>POST /games/:gid/clues/:objeto</code></td><td>jogador da partida</td><td><code>204</code></td></tr><tr><td><code>POST /games/:gid/puzzles/:chave</code></td><td>jogador da partida</td><td><code>204</code></td></tr><tr><td><code>POST /games/:gid/end</code></td><td>membro (expirar) ou dono (desistir)</td><td><code>204</code></td></tr><tr><td><code>GET /rooms/:id</code> · <code>PUT</code></td><td>token + e-mail · admin</td><td><code>200</code></td></tr><tr><td><code>GET /audit</code></td><td>admin</td><td><code>200</code></td></tr></tbody></table></div></section>
+<section class="section" id="exemplos" data-title="Requisições e respostas reais"><div class="section-head"><span class="section-number">03</span><div><h2>Requisições e respostas reais</h2><p class="lede">Capturadas executando a API com MongoDB em memória.</p></div></div>
+<div class="codebox"><div class="code-label">requisição</div><button class="copy" type="button">Copiar</button><pre><code>POST /api/groups
+Authorization: Bearer &lt;JWT&gt;
+Content-Type: application/json
+
+{ &quot;name&quot;: &quot;Corvos&quot; }</code></pre></div>
+<div class="codebox"><div class="code-label">resposta 201</div><button class="copy" type="button">Copiar</button><pre><code>{ &quot;id&quot;: &quot;6b0863375b1883f2fda7346b&quot;, &quot;name&quot;: &quot;Corvos&quot;,
+  &quot;ownerId&quot;: &quot;6b0863345b1883f2fda73456&quot;, &quot;members&quot;: [&quot;6b0863345b1883f2fda73456&quot;],
+  &quot;memberCount&quot;: 1, &quot;maxMembers&quot;: 4, &quot;inviteCode&quot;: &quot;spg45a5u&quot;,
+  &quot;demo&quot;: false, &quot;createdAt&quot;: 1795711799306 }</code></pre></div>
+<p>Erros têm sempre o mesmo formato: <code>codigo</code> estável para o programa e <code>mensagem</code> para a pessoa.</p>
+<div class="codebox"><div class="code-label">respostas de erro reais</div><button class="copy" type="button">Copiar</button><pre><code>GET /api/groups sem token        -&gt; 401 {&quot;erro&quot;:{&quot;codigo&quot;:&quot;TOKEN_AUSENTE&quot;,&quot;mensagem&quot;:&quot;Faça login para continuar.&quot;}}
+GET /api/groups/:id de estranho  -&gt; 403 {&quot;erro&quot;:{&quot;codigo&quot;:&quot;NAO_MEMBRO&quot;,&quot;mensagem&quot;:&quot;Você não faz parte deste grupo.&quot;}}
+GET /api/audit como jogador      -&gt; 403 {&quot;erro&quot;:{&quot;codigo&quot;:&quot;SOMENTE_ADMIN&quot;,&quot;mensagem&quot;:&quot;Área restrita a administradores.&quot;}}
+login com {&quot;email&quot;:{&quot;$ne&quot;:null}} -&gt; 400 {&quot;erro&quot;:{&quot;codigo&quot;:&quot;DADOS_INVALIDOS&quot;,&quot;mensagem&quot;:&quot;O campo o e-mail é inválido.&quot;}}
+PATCH /api/users/me {&quot;role&quot;:&quot;admin&quot;} -&gt; 400 {&quot;erro&quot;:{&quot;codigo&quot;:&quot;CAMPOS_NAO_EDITAVEIS&quot;, ...}}
+21ª chamada de autenticação      -&gt; 429 {&quot;erro&quot;:{&quot;codigo&quot;:&quot;MUITAS_TENTATIVAS&quot;, ...}}</code></pre></div></section>
+<section class="section" id="middleware" data-title="Middlewares"><div class="section-head"><span class="section-number">04</span><div><h2>Middlewares</h2><p class="lede">Funções em fila entre a requisição e a resposta.</p></div></div>
+<p>Um <strong>middleware</strong> recebe <code>(req, res, next)</code>. Ele pode preparar dados, responder e encerrar, ou chamar <code>next()</code>. Existe para não repetir a mesma verificação em cada rota. O <strong>controller</strong> é o fim da fila: lê o que precisa de <code>req</code>, chama o service e monta a resposta.</p>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/app.js#L15-L53" target="_blank" rel="noopener">backend/src/app.js · linhas 15–53</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">15</span>export function criarApp(ctx, { limites = {} } = {}) {
+<span class="ln">16</span>  const app = express();
+<span class="ln">17</span>  const limitadores = criarLimites(limites);
+<span class="ln">18</span>  ctx.tempoReal.quandoPresencaMudar((uid) =&gt; avisarPresenca(ctx, uid));
+<span class="ln">19</span>
+<span class="ln">20</span>  app.disable(&quot;x-powered-by&quot;);
+<span class="ln">21</span>  // O Render fica atrás de um proxy: o IP real do cliente chega no X-Forwarded-For
+<span class="ln">22</span>  app.set(&quot;trust proxy&quot;, 1);
+<span class="ln">23</span>
+<span class="ln">24</span>  // CORS restrito às origens do front-end; não substitui a autenticação das rotas
+<span class="ln">25</span>  app.use(cors({
+<span class="ln">26</span>    origin(origem, responder) {
+<span class="ln">27</span>      if (!origem || ctx.config.origens.includes(origem)) return responder(null, true);
+<span class="ln">28</span>      responder(new Error(&quot;ORIGEM_NAO_PERMITIDA&quot;));
+<span class="ln">29</span>    },
+<span class="ln">30</span>    methods: [&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;],
+<span class="ln">31</span>    allowedHeaders: [&quot;Content-Type&quot;, &quot;Authorization&quot;],
+<span class="ln">32</span>    maxAge: 600
+<span class="ln">33</span>  }));
+<span class="ln">34</span>
+<span class="ln">35</span>  app.use(express.json({ limit: &quot;1mb&quot; }));
+<span class="ln">36</span>  app.use((req, res, next) =&gt; {
+<span class="ln">37</span>    if (!ehObjetoSimples(req.body)) req.body = {};
+<span class="ln">38</span>    req.ctx = ctx;
+<span class="ln">39</span>    next();
+<span class="ln">40</span>  });
+<span class="ln">41</span>
+<span class="ln">42</span>  app.use(&quot;/api&quot;, limitadores.geral);
+<span class="ln">43</span>  app.use(&quot;/api/auth&quot;, rotasAutenticacao(limitadores));
+<span class="ln">44</span>  app.use(&quot;/api/users&quot;, rotasUsuarios());
+<span class="ln">45</span>  app.use(&quot;/api/groups&quot;, rotasGrupos());
+<span class="ln">46</span>  app.use(&quot;/api/invites&quot;, rotasConvites());
+<span class="ln">47</span>  app.use(&quot;/api/games&quot;, rotasPartidas());
+<span class="ln">48</span>  app.use(&quot;/api&quot;, rotasSistema());
+<span class="ln">49</span>
+<span class="ln">50</span>  app.use(rotaNaoEncontrada);
+<span class="ln">51</span>  app.use(tratarErros);
+<span class="ln">52</span>  return app;
+<span class="ln">53</span>}</code></pre></div>
+<p>A ordem de registro <strong>é</strong> a ordem de execução:</p>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">flowchart TD
+  R[Requisição] --&gt; C{&quot;cors()&lt;br/&gt;origem permitida?&quot;}
+  C -- não --&gt; E[tratarErros: 403]
+  C -- sim --&gt; J[&quot;express.json 1 MB&quot;]
+  J -- inválido ou grande --&gt; E2[&quot;tratarErros: 400 ou 413&quot;]
+  J --&gt; X[&quot;req.body vira objeto; req.ctx&quot;]
+  X --&gt; L{&quot;limite geral&lt;br/&gt;600 / 5 min / IP&quot;}
+  L -- excedeu --&gt; L429[429]
+  L --&gt; RT{rota existe?}
+  RT -- não --&gt; N[rotaNaoEncontrada: 404]
+  RT --&gt; A{&quot;autenticar&quot;}
+  A -- falha --&gt; U[401]
+  A --&gt; V{&quot;e-mail verificado?&quot;}
+  V -- não --&gt; F1[403]
+  V --&gt; P{&quot;perfil completo?&quot;}
+  P -- não --&gt; F2[403]
+  P --&gt; CT[controller]
+  CT --&gt; S[&quot;service: grupoComoMembro / grupoComoDono&quot;]
+  S -- regra violada --&gt; E3[&quot;throw ErroHttp → tratarErros&quot;]
+  S --&gt; DB[(MongoDB)]
+  DB --&gt; OK[200 / 201 / 204]</pre></div></figure>
+<h3>Inventário completo</h3>
+<div class="table-wrap"><table><thead><tr><th>Middleware</th><th>Arquivo</th><th>Registrado em</th><th>Verifica</th><th>Falha</th></tr></thead><tbody><tr><td><code>cors</code></td><td><code>app.js</code></td><td>global</td><td><code>Origin</code> na lista de <code>FRONTEND_URL</code> (sem Origin passa)</td><td>403 <code>ORIGEM_NAO_PERMITIDA</code></td></tr><tr><td><code>express.json</code></td><td><code>app.js</code></td><td>global</td><td>JSON válido até 1 MB</td><td>400 / 413</td></tr><tr><td>anônimo (corpo e ctx)</td><td><code>app.js</code></td><td>global</td><td>corpo é objeto; injeta <code>req.ctx</code></td><td>troca por <code>{}</code></td></tr><tr><td><code>limitadores.geral</code></td><td><code>middleware/limites.js</code></td><td><code>/api</code></td><td>600 por 5 min por IP</td><td>429</td></tr><tr><td><code>limitadores.autenticacao</code></td><td><code>middleware/limites.js</code></td><td>rotas de <code>/auth</code> (menos logout e callback)</td><td>20 por 15 min por IP, contador <strong>compartilhado</strong> entre elas</td><td>429</td></tr><tr><td><code>autenticar</code></td><td><code>middleware/autenticacao.js</code></td><td>rotas protegidas</td><td><code>Bearer</code>, assinatura, validade, usuário existe, <code>sessionVersion</code></td><td>401</td></tr><tr><td><code>exigirEmailVerificado</code></td><td>idem</td><td>grupos, convites, partidas, sistema, usuários</td><td><code>emailVerified</code></td><td>403</td></tr><tr><td><code>exigirPerfil</code></td><td>idem</td><td>grupos, convites, partidas, stats</td><td><code>profileComplete</code></td><td>403</td></tr><tr><td><code>exigirAdmin</code></td><td>idem</td><td><code>PUT /rooms/:id</code>, <code>GET /audit</code></td><td><code>role === &quot;admin&quot;</code></td><td>403</td></tr><tr><td><code>rotaNaoEncontrada</code></td><td><code>middleware/erros.js</code></td><td>depois das rotas</td><td>nenhuma rota casou</td><td>404</td></tr><tr><td><code>tratarErros</code></td><td>idem</td><td>último</td><td>tipo do erro</td><td>status do erro ou 500 genérico</td></tr></tbody></table></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/middleware/autenticacao.js#L5-L24" target="_blank" rel="noopener">backend/src/middleware/autenticacao.js · linhas 5–24</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">5</span>export async function autenticar(req, res, next) {
+<span class="ln">6</span>  const [esquema, token] = (req.get(&quot;authorization&quot;) || &quot;&quot;).split(&quot; &quot;);
+<span class="ln">7</span>  if (esquema !== &quot;Bearer&quot; || !token) throw naoAutenticado(&quot;Faça login para continuar.&quot;, &quot;TOKEN_AUSENTE&quot;);
+<span class="ln">8</span>
+<span class="ln">9</span>  let dados;
+<span class="ln">10</span>  try {
+<span class="ln">11</span>    dados = lerSessao(req.ctx, token);
+<span class="ln">12</span>  } catch {
+<span class="ln">13</span>    throw naoAutenticado(&quot;Sua sessão expirou. Entre novamente.&quot;, &quot;TOKEN_INVALIDO&quot;);
+<span class="ln">14</span>  }
+<span class="ln">15</span>
+<span class="ln">16</span>  // Redefinir a senha incrementa sessionVersion e derruba as sessões anteriores
+<span class="ln">17</span>  const usuario = await buscarPorId(req.ctx, dados.sub);
+<span class="ln">18</span>  if (!usuario || (usuario.sessionVersion || 0) !== dados.ver) {
+<span class="ln">19</span>    throw naoAutenticado(&quot;Sua sessão expirou. Entre novamente.&quot;, &quot;TOKEN_INVALIDO&quot;);
+<span class="ln">20</span>  }
+<span class="ln">21</span>  req.usuario = usuario;
+<span class="ln">22</span>  req.sessaoEmitidaEm = dados.iat * 1000;
+<span class="ln">23</span>  next();
+<span class="ln">24</span>}</code></pre></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/middleware/autenticacao.js#L26-L41" target="_blank" rel="noopener">backend/src/middleware/autenticacao.js · linhas 26–41</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">26</span>export function exigirEmailVerificado(req, res, next) {
+<span class="ln">27</span>  if (!req.usuario.emailVerified) throw proibido(&quot;Confirme seu e-mail para acessar esta área.&quot;, &quot;EMAIL_NAO_VERIFICADO&quot;);
+<span class="ln">28</span>  next();
+<span class="ln">29</span>}
+<span class="ln">30</span>
+<span class="ln">31</span>export function exigirPerfil(req, res, next) {
+<span class="ln">32</span>  if (!req.usuario.profileComplete) throw proibido(&quot;Finalize seu perfil para continuar.&quot;, &quot;PERFIL_INCOMPLETO&quot;);
+<span class="ln">33</span>  next();
+<span class="ln">34</span>}
+<span class="ln">35</span>
+<span class="ln">36</span>export function exigirAdmin(req, res, next) {
+<span class="ln">37</span>  if (req.usuario.role !== &quot;admin&quot;) throw proibido(&quot;Área restrita a administradores.&quot;, &quot;SOMENTE_ADMIN&quot;);
+<span class="ln">38</span>  next();
+<span class="ln">39</span>}
+<span class="ln">40</span>
+<span class="ln">41</span>export const jogador = [autenticar, exigirEmailVerificado, exigirPerfil];</code></pre></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/middleware/limites.js#L1-L18" target="_blank" rel="noopener">backend/src/middleware/limites.js · linhas 1–18</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">1</span>import { rateLimit } from &quot;express-rate-limit&quot;;
+<span class="ln">2</span>
+<span class="ln">3</span>function limitador({ janelaMinutos, maximo, mensagem }) {
+<span class="ln">4</span>  return rateLimit({
+<span class="ln">5</span>    windowMs: janelaMinutos * 60 * 1000,
+<span class="ln">6</span>    limit: maximo,
+<span class="ln">7</span>    standardHeaders: &quot;draft-8&quot;,
+<span class="ln">8</span>    legacyHeaders: false,
+<span class="ln">9</span>    handler: (req, res) =&gt; res.status(429).json({ erro: { codigo: &quot;MUITAS_TENTATIVAS&quot;, mensagem } })
+<span class="ln">10</span>  });
+<span class="ln">11</span>}
+<span class="ln">12</span>
+<span class="ln">13</span>export function criarLimites({ autenticacao = 20, geral = 600 } = {}) {
+<span class="ln">14</span>  return {
+<span class="ln">15</span>    autenticacao: limitador({ janelaMinutos: 15, maximo: autenticacao, mensagem: &quot;Muitas tentativas. Aguarde alguns minutos e tente novamente.&quot; }),
+<span class="ln">16</span>    geral: limitador({ janelaMinutos: 5, maximo: geral, mensagem: &quot;Muitas requisições. Aguarde um pouco.&quot; })
+<span class="ln">17</span>  };
+<span class="ln">18</span>}</code></pre></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/middleware/erros.js#L8-L26" target="_blank" rel="noopener">backend/src/middleware/erros.js · linhas 8–26</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">8</span>export function tratarErros(erro, req, res, next) {
+<span class="ln">9</span>  if (res.headersSent) return next(erro);
+<span class="ln">10</span>
+<span class="ln">11</span>  if (erro instanceof ErroHttp) {
+<span class="ln">12</span>    return res.status(erro.status).json({ erro: { codigo: erro.codigo, mensagem: erro.message, ...erro.extras } });
+<span class="ln">13</span>  }
+<span class="ln">14</span>  if (erro.type === &quot;entity.parse.failed&quot;) {
+<span class="ln">15</span>    return res.status(400).json({ erro: { codigo: &quot;JSON_INVALIDO&quot;, mensagem: &quot;O corpo da requisição não é um JSON válido.&quot; } });
+<span class="ln">16</span>  }
+<span class="ln">17</span>  if (erro.type === &quot;entity.too.large&quot;) {
+<span class="ln">18</span>    return res.status(413).json({ erro: { codigo: &quot;CORPO_GRANDE&quot;, mensagem: &quot;Os dados enviados são grandes demais.&quot; } });
+<span class="ln">19</span>  }
+<span class="ln">20</span>  if (erro.message === &quot;ORIGEM_NAO_PERMITIDA&quot;) {
+<span class="ln">21</span>    return res.status(403).json({ erro: { codigo: &quot;ORIGEM_NAO_PERMITIDA&quot;, mensagem: &quot;Origem não autorizada.&quot; } });
+<span class="ln">22</span>  }
+<span class="ln">23</span>
+<span class="ln">24</span>  console.error(&quot;[erro]&quot;, req.method, req.originalUrl, erro);
+<span class="ln">25</span>  res.status(500).json({ erro: { codigo: &quot;ERRO_INTERNO&quot;, mensagem: &quot;Erro interno. Tente novamente em instantes.&quot; } });
+<span class="ln">26</span>}</code></pre></div>
+<div class="note">Os handlers são <code>async</code> e não têm <code>try/catch</code>: no <strong>Express 5</strong>, uma Promise rejeitada é encaminhada sozinha ao middleware de erro.</div>
+<h3>Um caminho real, do começo ao fim</h3>
+<p><code>POST /api/games/:gid/start</code>: cliente → <code>cors</code> → <code>express.json</code> → ctx → limite geral → <code>rotasPartidas</code> → <code>autenticar</code> → <code>exigirEmailVerificado</code> → <code>exigirPerfil</code> → <code>partidasController.iniciar</code> → <code>iniciarPartida</code> (<code>grupoComoDono</code>) → <code>games.updateOne</code> → <code>tempoReal.notificar</code> → <code>204</code>.</p>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/routes/partidas.js#L5-L18" target="_blank" rel="noopener">backend/src/routes/partidas.js · linhas 5–18</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">5</span>export function rotasPartidas() {
+<span class="ln">6</span>  const r = Router();
+<span class="ln">7</span>  r.use(jogador);
+<span class="ln">8</span>
+<span class="ln">9</span>  r.get(&quot;/:gid&quot;, c.obter);
+<span class="ln">10</span>  r.post(&quot;/:gid&quot;, c.criar);
+<span class="ln">11</span>  r.delete(&quot;/:gid&quot;, c.excluir);
+<span class="ln">12</span>  r.post(&quot;/:gid/players&quot;, c.entrar);
+<span class="ln">13</span>  r.post(&quot;/:gid/start&quot;, c.iniciar);
+<span class="ln">14</span>  r.post(&quot;/:gid/clues/:objeto&quot;, c.registrarPista);
+<span class="ln">15</span>  r.post(&quot;/:gid/puzzles/:chave&quot;, c.registrarEnigma);
+<span class="ln">16</span>  r.post(&quot;/:gid/end&quot;, c.encerrar);
+<span class="ln">17</span>  return r;
+<span class="ln">18</span>}</code></pre></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/controllers/partidasController.js#L16-L19" target="_blank" rel="noopener">backend/src/controllers/partidasController.js · linhas 16–19</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">16</span>export async function iniciar(req, res) {
+<span class="ln">17</span>  await partidas.iniciarPartida(req.ctx, req.usuario, req.params.gid);
+<span class="ln">18</span>  res.status(204).end();
+<span class="ln">19</span>}</code></pre></div></section>
+<section class="section" id="colecoes" data-title="MongoDB: coleções e documentos"><div class="section-head"><span class="section-number">05</span><div><h2>MongoDB: coleções e documentos</h2><p class="lede">Nove coleções, criadas quando o primeiro documento ou índice aparece.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Coleção</th><th>Guarda</th><th>Apagada quando</th></tr></thead><tbody><tr><td><code>users</code></td><td>conta, hash, perfil, 2FA, aceite dos termos</td><td>conta excluída</td></tr><tr><td><code>authTokens</code></td><td>hash de tokens temporários</td><td>uso ou TTL</td></tr><tr><td><code>groups</code></td><td>nome, dono, membros, código</td><td>grupo excluído</td></tr><tr><td><code>invites</code></td><td>convites</td><td>cancelamento, exclusão de grupo ou conta</td></tr><tr><td><code>messages</code></td><td>chat</td><td>TTL de 24 h ou exclusão do grupo</td></tr><tr><td><code>games</code></td><td>a partida <strong>atual</strong> de cada grupo</td><td>nova partida, cancelamento, grupo excluído</td></tr><tr><td><code>gameHistory</code></td><td>resumo de cada partida <strong>encerrada</strong></td><td>só quando fica sem jogadores</td></tr><tr><td><code>auditLogs</code></td><td>quem fez o quê e quando</td><td><strong>nunca pelo código</strong></td></tr><tr><td><code>rooms</code></td><td>sala editada pelo admin</td><td>—</td></tr></tbody></table></div>
+<p>A conexão é criada uma única vez e os índices são garantidos na inicialização:</p>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/config/banco.js#L3-L9" target="_blank" rel="noopener">backend/src/config/banco.js · linhas 3–9</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">3</span>export async function conectar({ uri, banco }) {
+<span class="ln">4</span>  const cliente = new MongoClient(uri, { serverSelectionTimeoutMS: 10000, appName: &quot;escape-py-api&quot; });
+<span class="ln">5</span>  await cliente.connect();
+<span class="ln">6</span>  const db = cliente.db(banco);
+<span class="ln">7</span>  await db.command({ ping: 1 });
+<span class="ln">8</span>  return { cliente, db };
+<span class="ln">9</span>}</code></pre></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/config/banco.js#L12-L36" target="_blank" rel="noopener">backend/src/config/banco.js · linhas 12–36</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">12</span>export async function criarIndices(db) {
+<span class="ln">13</span>  const texto = { $type: &quot;string&quot; };
+<span class="ln">14</span>  await Promise.all([
+<span class="ln">15</span>    db.collection(&quot;users&quot;).createIndex({ email: 1 }, { unique: true }),
+<span class="ln">16</span>    db.collection(&quot;users&quot;).createIndex({ usernameLower: 1 }, { unique: true, partialFilterExpression: { usernameLower: texto } }),
+<span class="ln">17</span>    db.collection(&quot;users&quot;).createIndex({ googleSub: 1 }, { unique: true, partialFilterExpression: { googleSub: texto } }),
+<span class="ln">18</span>    db.collection(&quot;users&quot;).createIndex({ firebaseUid: 1 }, { unique: true, partialFilterExpression: { firebaseUid: texto } }),
+<span class="ln">19</span>
+<span class="ln">20</span>    db.collection(&quot;authTokens&quot;).createIndex({ tokenHash: 1 }, { unique: true }),
+<span class="ln">21</span>    db.collection(&quot;authTokens&quot;).createIndex({ userId: 1, type: 1 }),
+<span class="ln">22</span>    db.collection(&quot;authTokens&quot;).createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
+<span class="ln">23</span>
+<span class="ln">24</span>    db.collection(&quot;groups&quot;).createIndex({ members: 1 }),
+<span class="ln">25</span>    db.collection(&quot;groups&quot;).createIndex({ demo: 1 }, { unique: true, partialFilterExpression: { demo: true } }),
+<span class="ln">26</span>    db.collection(&quot;invites&quot;).createIndex({ toUid: 1, status: 1 }),
+<span class="ln">27</span>    db.collection(&quot;invites&quot;).createIndex({ fromUid: 1 }),
+<span class="ln">28</span>    db.collection(&quot;invites&quot;).createIndex({ groupId: 1 }),
+<span class="ln">29</span>    db.collection(&quot;games&quot;).createIndex({ players: 1, status: 1 }),
+<span class="ln">30</span>    db.collection(&quot;gameHistory&quot;).createIndex({ players: 1, finishedAt: -1 }),
+<span class="ln">31</span>    db.collection(&quot;gameHistory&quot;).createIndex({ groupId: 1, createdAt: 1 }, { unique: true }),
+<span class="ln">32</span>    db.collection(&quot;messages&quot;).createIndex({ groupId: 1, createdAt: -1 }),
+<span class="ln">33</span>    db.collection(&quot;messages&quot;).createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
+<span class="ln">34</span>    db.collection(&quot;auditLogs&quot;).createIndex({ at: -1 })
+<span class="ln">35</span>  ]);
+<span class="ln">36</span>}</code></pre></div>
+<h3>Documento real em <code>users</code></h3>
+<div class="codebox"><div class="code-label">json</div><button class="copy" type="button">Copiar</button><pre><code>{ &quot;_id&quot;: &quot;ObjectId(6b0863345b1883f2fda73456)&quot;, &quot;email&quot;: &quot;ana@teste.com&quot;, &quot;name&quot;: &quot;ana&quot;,
+  &quot;passwordHash&quot;: &quot;$2b$12$js5BwRWYaViWF...&quot;, &quot;emailVerified&quot;: true, &quot;role&quot;: &quot;player&quot;,
+  &quot;profileComplete&quot;: true, &quot;twoFactor&quot;: { &quot;enabled&quot;: false }, &quot;sessionVersion&quot;: 0,
+  &quot;termsVersion&quot;: &quot;1.0&quot;, &quot;termsAcceptedAt&quot;: &quot;2026-11-26T16:49:56.782Z&quot;,
+  &quot;username&quot;: &quot;ana&quot;, &quot;usernameLower&quot;: &quot;ana&quot;, &quot;avatarStyle&quot;: &quot;bottts&quot;, &quot;avatarSeed&quot;: &quot;abc&quot;,
+  &quot;createdAt&quot;: &quot;2026-11-26T16:49:56.782Z&quot;, &quot;updatedAt&quot;: &quot;2026-11-26T16:49:57.445Z&quot; }</code></pre></div></section>
+<section class="section" id="jogos" data-title="`games` × `gameHistory`"><div class="section-head"><span class="section-number">06</span><div><h2>`games` × `gameHistory`</h2><p class="lede">A pergunta que mais precisa de resposta segura.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th></th><th><code>games</code></th><th><code>gameHistory</code></th></tr></thead><tbody><tr><td>Papel</td><td>estado <strong>vivo</strong> e compartilhado</td><td>registro <strong>permanente</strong> e resumido</td></tr><tr><td>Quantos por grupo</td><td>no máximo 1 (<code>_id</code> = id do grupo)</td><td>um por partida encerrada</td></tr><tr><td>Criação</td><td><code>criarPartida</code> (<code>insertOne</code>)</td><td><code>arquivarPartida</code> (<code>upsert</code> com <code>$setOnInsert</code>)</td></tr><tr><td>Atualização</td><td>várias (<code>$push</code>, <code>$set</code>)</td><td>nenhuma; só <code>$pull</code> do jogador na exclusão de conta</td></tr><tr><td>Contém</td><td>semente, configuração, pistas e enigmas com autor e hora</td><td>totais: enigmas, dicas, tentativas, pontos, duração</td></tr><tr><td>Exclusão</td><td><code>DELETE /games/:gid</code> ou exclusão do grupo</td><td>sobrevive a ambas</td></tr><tr><td>Consultada por</td><td>sala do jogo e estatísticas (em andamento)</td><td>estatísticas</td></tr></tbody></table></div>
+<p><strong>Por que duas?</strong> Para jogar de novo, o documento do grupo precisa ser apagado e recriado. Se o resultado ficasse só nele, o histórico se perderia. O resumo separado também fica pequeno e não carrega a configuração inteira.</p>
+<h3><code>games</code> (real, <code>config</code> omitida)</h3>
+<div class="codebox"><div class="code-label">json</div><button class="copy" type="button">Copiar</button><pre><code>{ &quot;_id&quot;: &quot;6b0863375b1883f2fda7346b&quot;, &quot;groupId&quot;: &quot;6b0863375b1883f2fda7346b&quot;,
+  &quot;ownerId&quot;: &quot;6b0863345b1883f2fda73456&quot;, &quot;difficulty&quot;: &quot;facil&quot;, &quot;seed&quot;: 111,
+  &quot;status&quot;: &quot;COMPLETED&quot;, &quot;players&quot;: [&quot;6b08...3456&quot;, &quot;6b08...345d&quot;], &quot;config&quot;: { },
+  &quot;createdAt&quot;: &quot;...16:49:59.546Z&quot;, &quot;startedAt&quot;: &quot;...16:49:59.575Z&quot;,
+  &quot;expiresAt&quot;: &quot;...17:14:59.575Z&quot;, &quot;finishedAt&quot;: &quot;...16:49:59.735Z&quot;, &quot;score&quot;: 824,
+  &quot;found&quot;:  { &quot;livro&quot;: { &quot;by&quot;: &quot;6b08...3456&quot;, &quot;at&quot;: &quot;...16:49:59.640Z&quot; } },
+  &quot;solved&quot;: { &quot;p1&quot;: { &quot;by&quot;: &quot;6b08...3456&quot;, &quot;at&quot;: &quot;...16:49:59.660Z&quot;, &quot;hints&quot;: 0, &quot;attempts&quot;: 0 } } }</code></pre></div>
+<h3><code>gameHistory</code> (real, da mesma partida)</h3>
+<div class="codebox"><div class="code-label">json</div><button class="copy" type="button">Copiar</button><pre><code>{ &quot;_id&quot;: &quot;ObjectId(6b0863375b1883f2fda73478)&quot;, &quot;groupId&quot;: &quot;6b0863375b1883f2fda7346b&quot;,
+  &quot;players&quot;: [&quot;6b08...3456&quot;, &quot;6b08...345d&quot;], &quot;difficulty&quot;: &quot;facil&quot;, &quot;status&quot;: &quot;COMPLETED&quot;,
+  &quot;score&quot;: 824, &quot;puzzlesTotal&quot;: 3, &quot;puzzlesSolved&quot;: 3, &quot;hints&quot;: 0, &quot;attempts&quot;: 0,
+  &quot;createdAt&quot;: &quot;...16:49:59.546Z&quot;, &quot;startedAt&quot;: &quot;...16:49:59.575Z&quot;,
+  &quot;finishedAt&quot;: &quot;...16:49:59.735Z&quot;, &quot;durationMs&quot;: 160 }</code></pre></div>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/services/historico.js#L1-L47" target="_blank" rel="noopener">backend/src/services/historico.js · linhas 1–47</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">1</span>import { ObjectId } from &quot;mongodb&quot;;
+<span class="ln">2</span>import { somarUso } from &quot;./pontuacao.js&quot;;
+<span class="ln">3</span>
+<span class="ln">4</span>const ENCERRADAS = [&quot;COMPLETED&quot;, &quot;FAILED&quot;, &quot;EXPIRED&quot;];
+<span class="ln">5</span>
+<span class="ln">6</span>function resumir(partida, status) {
+<span class="ln">7</span>  const { dicas, tentativas } = somarUso(partida.solved);
+<span class="ln">8</span>  const inicio = partida.startedAt ?? null;
+<span class="ln">9</span>  const fim = partida.finishedAt ?? partida.expiresAt;
+<span class="ln">10</span>  return {
+<span class="ln">11</span>    groupId: partida.groupId,
+<span class="ln">12</span>    players: partida.players,
+<span class="ln">13</span>    difficulty: partida.difficulty,
+<span class="ln">14</span>    status,
+<span class="ln">15</span>    score: status === &quot;COMPLETED&quot; ? partida.score ?? 0 : null,
+<span class="ln">16</span>    puzzlesTotal: partida.config.ordem.length,
+<span class="ln">17</span>    puzzlesSolved: Object.keys(partida.solved || {}).length,
+<span class="ln">18</span>    hints: dicas,
+<span class="ln">19</span>    attempts: tentativas,
+<span class="ln">20</span>    createdAt: partida.createdAt,
+<span class="ln">21</span>    startedAt: inicio,
+<span class="ln">22</span>    finishedAt: fim,
+<span class="ln">23</span>    durationMs: inicio ? fim - inicio : null
+<span class="ln">24</span>  };
+<span class="ln">25</span>}
+<span class="ln">26</span>
+<span class="ln">27</span>function statusEncerrado(partida) {
+<span class="ln">28</span>  if (ENCERRADAS.includes(partida.status)) return partida.status;
+<span class="ln">29</span>  if (partida.status === &quot;PLAYING&quot; &amp;&amp; partida.expiresAt &lt;= new Date()) return &quot;EXPIRED&quot;;
+<span class="ln">30</span>  return null;
+<span class="ln">31</span>}
+<span class="ln">32</span>
+<span class="ln">33</span>// Idempotente: a chave (groupId, createdAt) identifica a partida e impede registros duplicados
+<span class="ln">34</span>export async function arquivarPartida(ctx, partida) {
+<span class="ln">35</span>  const status = partida &amp;&amp; statusEncerrado(partida);
+<span class="ln">36</span>  if (!status) return;
+<span class="ln">37</span>  const resumo = resumir(partida, status);
+<span class="ln">38</span>  await ctx.db.collection(&quot;gameHistory&quot;).updateOne(
+<span class="ln">39</span>    { groupId: resumo.groupId, createdAt: resumo.createdAt },
+<span class="ln">40</span>    { $setOnInsert: { _id: new ObjectId(), ...resumo } },
+<span class="ln">41</span>    { upsert: true }
+<span class="ln">42</span>  );
+<span class="ln">43</span>}
+<span class="ln">44</span>
+<span class="ln">45</span>export async function arquivarPartidaDoGrupo(ctx, gid) {
+<span class="ln">46</span>  await arquivarPartida(ctx, await ctx.db.collection(&quot;games&quot;).findOne({ _id: gid }));
+<span class="ln">47</span>}</code></pre></div>
+<h3>Os três momentos do arquivamento</h3>
+<ol><li>Conclusão (<code>registrarEnigma</code> do enigma final).</li><li>Desistência ou tempo esgotado (<code>encerrarPartida</code>).</li><li>Exclusão do grupo (<code>apagarGrupo</code>), antes de remover o documento: cobre a partida vencida que ninguém encerrou.</li></ol>
+<p>O índice único <code>(groupId, createdAt)</code> torna a operação <strong>idempotente</strong>: arquivar duas vezes não duplica. Partida ainda em andamento, dentro do prazo, não vira histórico quando o grupo é excluído. Partida cancelada no lobby também não.</p>
+<div class="note alerta">A atualização em <code>games</code> e a gravação em <code>gameHistory</code> são <strong>duas operações separadas, sem transação</strong>. Se o processo caísse entre elas, a partida ficaria concluída sem resumo; excluir o grupo arquivaria, mas iniciar uma nova partida apagaria o documento sem arquivar.</div></section>
+<section class="section" id="relacoes" data-title="Relacionamentos, consultas e isolamento"><div class="section-head"><span class="section-number">07</span><div><h2>Relacionamentos, consultas e isolamento</h2><p class="lede">Como um documento aponta para outro.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">erDiagram
+  users ||--o{ groups : &quot;ownerId e members[] (texto)&quot;
+  groups ||--o| games : &quot;games._id = id do grupo&quot;
+  groups ||--o{ gameHistory : &quot;groupId (permanece após excluir)&quot;
+  groups ||--o{ messages : groupId
+  groups ||--o{ invites : groupId
+  users ||--o{ invites : &quot;fromUid e toUid&quot;
+  users ||--o{ authTokens : &quot;userId (ObjectId)&quot;
+  users ||--o{ auditLogs : &quot;uid&quot;</pre></div></figure>
+<p>São <strong>referências por id</strong>, sem chave estrangeira: a integridade é mantida pelo código (exclusão em cascata em <code>apagarGrupo</code> e <code>excluirConta</code>).</p>
+<div class="table-wrap"><table><thead><tr><th>Consulta</th><th>Índice que a atende</th></tr></thead><tbody><tr><td><code>users.findOne({ email })</code></td><td><code>email</code> único</td></tr><tr><td><code>users.findOne({ usernameLower })</code></td><td><code>usernameLower</code> único parcial</td></tr><tr><td><code>groups.find({ members: uid })</code></td><td><code>members</code> (multikey)</td></tr><tr><td><code>messages.find({ groupId, expiresAt &gt; agora }).sort(createdAt).limit(60)</code></td><td><code>(groupId, createdAt)</code></td></tr><tr><td><code>invites.find({ toUid, status })</code></td><td><code>(toUid, status)</code></td></tr><tr><td><code>games.find({ players, status })</code></td><td><code>(players, status)</code> — <code>explain()</code> mostrou <code>IXSCAN</code></td></tr><tr><td><code>gameHistory.find({ players: uid })</code></td><td><code>(players, finishedAt)</code> — <code>explain()</code> mostrou <code>IXSCAN</code></td></tr></tbody></table></div>
+<p><strong>Isolamento</strong> entre grupos e jogadores é feito no servidor: o <code>uid</code> sai do token e cada operação de grupo passa por <code>grupoComoMembro</code> ou <code>grupoComoDono</code>; histórico e estatísticas filtram por <code>players: uid</code>. Todos compartilham o mesmo banco e as mesmas coleções.</p>
+<h3>Regras aplicadas antes de gravar</h3>
+<ul><li>Formato e tipo (<code>utils/validacao.js</code>).</li><li>Permissão (dono, membro, jogador, admin).</li><li>Estado (transição de status, prazo, dependências) no filtro da própria escrita.</li><li>Unicidade pelos índices.</li></ul>
+<p>O banco <strong>não</strong> tem validação de schema (<code>$jsonSchema</code>): quem garante o formato é a aplicação.</p>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/src/utils/validacao.js#L21-L28" target="_blank" rel="noopener">backend/src/utils/validacao.js · linhas 21–28</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">21</span>export function texto(valor, campo, { obrigatorio = true, max = 500 } = {}) {
+<span class="ln">22</span>  if (valor === undefined || valor === null || valor === &quot;&quot;) {
+<span class="ln">23</span>    if (obrigatorio) throw requisicaoInvalida(`Informe ${campo}.`);
+<span class="ln">24</span>    return &quot;&quot;;
+<span class="ln">25</span>  }
+<span class="ln">26</span>  if (typeof valor !== &quot;string&quot;) throw requisicaoInvalida(`O campo ${campo} é inválido.`);
+<span class="ln">27</span>  return valor.replace(/\s+/g, &quot; &quot;).trim().slice(0, max);
+<span class="ln">28</span>}</code></pre></div></section>
+  </article>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/busca.js"></script>
+<script src="assets/guia.js"></script>
+</body>
+</html>

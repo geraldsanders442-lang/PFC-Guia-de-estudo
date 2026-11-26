@@ -1,0 +1,160 @@
+backend/package.json:11-15  "scripts": {
+backend/package.json:14-14  "test": "node --test --test-concurrency=1 test/"
+backend/src/app.js:15-53  export function criarApp(ctx, { limites = {} } = {}) {
+backend/src/app.js:22-22  app.set("trust proxy", 1);
+backend/src/app.js:25-33  app.use(cors({
+backend/src/app.js:42-42  app.use("/api", limitadores.geral);
+backend/src/config/ambiente.js:11-45  export function lerAmbiente(env = process.env) {
+backend/src/config/banco.js:12-36  export async function criarIndices(db) {
+backend/src/config/banco.js:3-9  export async function conectar({ uri, banco }) {
+backend/src/config/banco.js:33-33  db.collection("messages").createIndex({ expiresAt: 1 }, { expireAfterS
+backend/src/controllers/autenticacaoController.js:117-119  function opcoesCookie(req) {
+backend/src/controllers/autenticacaoController.js:20-23  export async function sair(req, res) {
+backend/src/controllers/partidasController.js:16-19  export async function iniciar(req, res) {
+backend/src/controllers/sistemaController.js:1-8  export async function saude(req, res) {
+backend/src/controllers/usuariosController.js:23-27  export async function perfil(req, res) {
+backend/src/middleware/autenticacao.js:26-41  export function exigirEmailVerificado(req, res, next) {
+backend/src/middleware/autenticacao.js:5-24  export async function autenticar(req, res, next) {
+backend/src/middleware/erros.js:8-26  export function tratarErros(erro, req, res, next) {
+backend/src/middleware/limites.js:1-18  import { rateLimit } from "express-rate-limit";
+backend/src/middleware/limites.js:13-18  export function criarLimites({ autenticacao = 20, geral = 600 } = {}) 
+backend/src/middleware/limites.js:3-11  function limitador({ janelaMinutos, maximo, mensagem }) {
+backend/src/routes/grupos.js:5-21  export function rotasGrupos() {
+backend/src/routes/partidas.js:5-18  export function rotasPartidas() {
+backend/src/routes/sistema.js:7-19  export function rotasSistema() {
+backend/src/routes/usuarios.js:5-17  export function rotasUsuarios() {
+backend/src/server.js:22-29  const ctx = {
+backend/src/services/auditoria.js:2-14  export async function registrarAuditoria(ctx, usuario, acao, detalhe =
+backend/src/services/autenticacao.js:147-154  export async function concluirPrimeiroFator(ctx, usuario, metodo) {
+backend/src/services/autenticacao.js:166-179  export async function verificarSegundoFator(ctx, corpo) {
+backend/src/services/autenticacao.js:224-242  export async function solicitarRedefinicao(ctx, corpo) {
+backend/src/services/autenticacao.js:244-258  export async function redefinirSenha(ctx, corpo) {
+backend/src/services/autenticacao.js:30-32  export function gerarHash(senha) {
+backend/src/services/autenticacao.js:36-62  export async function cadastrar(ctx, corpo) {
+backend/src/services/autenticacao.js:41-56  if (corpo.acceptTerms !== true) throw requisicaoInvalida("Aceite o Ter
+backend/src/services/autenticacao.js:44-56  const usuario = novoUsuario({
+backend/src/services/autenticacao.js:91-114  export async function entrar(ctx, corpo) {
+backend/src/services/chat.js:15-23  export async function listarMensagens(ctx, usuario, grupoId) {
+backend/src/services/chat.js:25-47  export async function enviarMensagem(ctx, usuario, grupoId, corpo) {
+backend/src/services/contas.js:12-42  export async function atualizarPerfil(ctx, usuario, corpo) {
+backend/src/services/contas.js:50-75  export async function excluirConta(ctx, usuario, corpo, sessaoEmitidaE
+backend/src/services/convites.js:81-107  export async function responderConvite(ctx, usuario, id, corpo) {
+backend/src/services/doisFatores.js:77-96  export async function conferirSegundoFator(ctx, usuario, { code, recov
+backend/src/services/email.js:9-26  async enviar({ para, assunto, texto, html }) {
+backend/src/services/estatisticas.js:10-46  export async function estatisticasDoJogador(ctx, uid, agora = new Date
+backend/src/services/firebaseLegado.js:10-132  export function criarFirebaseLegado(config, { fetchImpl = fetch, urlRe
+backend/src/services/firebaseLegado.js:43-50  async entrarComSenha(email, senha) {
+backend/src/services/google.js:34-50  async trocarCodigo(codigo, verificador) {
+backend/src/services/google.js:52-57  async validarIdToken(idToken, nonce) {
+backend/src/services/grupos.js:113-119  export async function adicionarMembro(ctx, grupoId, uid, filtroExtra =
+backend/src/services/grupos.js:152-164  export async function apagarGrupo(ctx, grupo) {
+backend/src/services/grupos.js:37-42  export async function grupoComoMembro(ctx, id, uid) {
+backend/src/services/grupos.js:44-48  export async function grupoComoDono(ctx, id, uid) {
+backend/src/services/grupos.js:50-52  export function avisarGrupo(ctx, grupo, canal, extras = []) {
+backend/src/services/grupos.js:8-8  export const MAX_INTEGRANTES = 4;
+backend/src/services/grupos.js:82-101  export async function criarGrupo(ctx, usuario, corpo) {
+backend/src/services/historico.js:1-47  import { ObjectId } from "mongodb";
+backend/src/services/historico.js:34-43  export async function arquivarPartida(ctx, partida) {
+backend/src/services/historico.js:45-47  export async function arquivarPartidaDoGrupo(ctx, gid) {
+backend/src/services/historico.js:49-53  export async function removerJogadorDoHistorico(ctx, uid) {
+backend/src/services/loginGoogle.js:123-139  async function criarContaGoogle(ctx, identidade, origem) {
+backend/src/services/loginGoogle.js:36-70  export async function concluirLoginGoogle(ctx, { code, state, error, s
+backend/src/services/loginGoogle.js:82-104  export async function entrarComGoogle(ctx, identidade, idToken, origem
+backend/src/services/migracao.js:38-44  const base = novoUsuario({
+backend/src/services/partidas.js:111-123  export async function iniciarPartida(ctx, usuario, gid) {
+backend/src/services/partidas.js:125-127  function filtroEmAndamento(gid, uid) {
+backend/src/services/partidas.js:129-147  export async function registrarPista(ctx, usuario, gid, objeto) {
+backend/src/services/partidas.js:150-185  export async function registrarEnigma(ctx, usuario, gid, chave, corpo)
+backend/src/services/partidas.js:155-155  const dicas = inteiro(corpo.hints, "dicas", 0, 3);
+backend/src/services/partidas.js:187-205  export async function encerrarPartida(ctx, usuario, gid, corpo) {
+backend/src/services/partidas.js:31-31  const chaveValida = (valor) => typeof valor === "string" && ID_CHAVE.t
+backend/src/services/partidas.js:34-57  export function validarConfig(config, dificuldade) {
+backend/src/services/partidas.js:75-94  export async function criarPartida(ctx, usuario, gid, corpo) {
+backend/src/services/partidas.js:8-12  export const DIFICULDADES = {
+backend/src/services/partidas.js:82-85  const partida = {
+backend/src/services/partidas.js:96-108  export async function entrarNaPartida(ctx, usuario, gid) {
+backend/src/services/pontuacao.js:16-20  export function calcularPontuacao({ dificuldade, resolvidos, dicas, te
+backend/src/services/presenca.js:2-9  export async function avisarPresenca(ctx, uid) {
+backend/src/services/salas.js:15-15  const posicaoNoMapa = (m) => m === null || (ehObjetoSimples(m) && frac
+backend/src/services/salas.js:51-57  export async function obterSala(ctx, usuario, id, { rascunho }) {
+backend/src/services/sessao.js:7-15  export function emitirSessao(ctx, usuario) {
+backend/src/services/tempoReal.js:12-37  abrir(uid, resposta) {
+backend/src/services/tempoReal.js:3-58  export function criarTempoReal({ intervaloPing = 25000 } = {}) {
+backend/src/services/tempoReal.js:39-43  notificar(uids, canal) {
+backend/src/services/tokensUsoUnico.js:28-30  export function consumirToken(ctx, token, tipo) {
+backend/src/services/tokensUsoUnico.js:5-17  export async function criarToken(ctx, { tipo, usuarioId = null, minuto
+backend/src/services/usuarios.js:30-41  export function perfilPublico(u) {
+backend/src/utils/erros.js:15-21  export const conflito = (mensagem, codigo = "CONFLITO") => new ErroHtt
+backend/src/utils/erros.js:2-9  export class ErroHttp extends Error {
+backend/src/utils/segredos.js:12-25  // AES-256-GCM: confidencialidade e integridade do segredo TOTP guarda
+backend/src/utils/segredos.js:13-18  export function cifrar(textoClaro, chave) {
+backend/src/utils/validacao.js:21-28  export function texto(valor, campo, { obrigatorio = true, max = 500 } 
+backend/src/utils/validacao.js:37-43  export function validarSenha(valor) {
+backend/src/utils/validacao.js:4-13  export const LIMITES = {
+backend/src/utils/validacao.js:45-51  export function validarUsername(valor) {
+backend/src/utils/validacao.js:59-62  export function inteiro(valor, campo, min, max) {
+backend/src/utils/validacao.js:64-66  export function objectId(valor) {
+backend/test/ajuda.js:11-77  export async function criarAmbiente({ google = null, legado = null, li
+backend/test/ajuda.js:17-30  const ctx = {
+backend/test/autenticacao.test.js:151-167  test("rota protegida: token ausente, inválido e válido", async () => {
+backend/test/autenticacao.test.js:223-239  test("redefine a senha uma única vez e derruba as sessões anteriores",
+backend/test/historico.test.js:177-194  test("o score enviado pelo cliente é ignorado e o resultado é imutável
+css/sala.css:513-516  @media (max-width: 1100px) {
+js/componentes/Chat.js:6-25  renderizar(mensagens, uid, agora) {
+js/componentes/MapaSala.js:43-43  b.innerHTML = `<span class="sala-mapa__cone" style="transform: rotate(
+js/componentes/PainelChat.js:49-61  async #enviar(ev) {
+js/config.js:3-7  const LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
+js/firebase.js:1-8  // Configuração do Firebase
+js/main.js:23-28  static async iniciar() {
+js/main.js:3-29  export class Aplicacao {
+js/main.js:4-21  static PAGINAS = {
+js/modelos/Dificuldade.js:4-8  static NIVEIS = {
+js/modelos/Enigma.js:7-25  constructor({ chave, modelo, variante, dificuldade, final = false, obj
+js/modelos/EstadoPartida.js:14-20  static TRANSICOES = {
+js/modelos/Pontuacao.js:11-16  static calcular({ dificuldade, resolvidos, dicas, tentativas, restante
+js/modelos/TentativaEnigma.js:75-93  static conferirCodigo(tentativa, codigoDigitado, codigoEsperado) {
+js/nucleo/Aleatorio.js:28-34  proximo() {
+js/nucleo/Api.js:37-60  static async requisitar(metodo, caminho, corpo) {
+js/nucleo/Api.js:62-62  static get(caminho) { return Api.requisitar("GET", caminho); }
+js/nucleo/Api.js:7-14  export class ErroApi extends ErroApp {
+js/nucleo/Avatar.js:11-13  get url() {
+js/nucleo/Cronometro.js:15-17  restanteMs() {
+js/nucleo/ExecutorPython.js:15-30  preparar() {
+js/nucleo/ExecutorPython.js:32-36  #descartar() {
+js/nucleo/ExecutorPython.js:39-64  async executar({ codigo, nomeFuncao, testes = [], entrada = [], modo =
+js/nucleo/GeradorProcedural.js:15-24  static gerar({ sala, dificuldade, semente }) {
+js/nucleo/GeradorProcedural.js:164-187  static #simular(config, sala) {
+js/nucleo/PyodideWorker.js:1-4  // Worker clássico: o Pyodide roda fora da thread principal para que l
+js/nucleo/PyodideWorker.js:102-106  const pronto = (async () => {
+js/nucleo/PyodideWorker.js:110-120  self.onmessage = async ({ data }) => {
+js/nucleo/PyodideWorker.js:24-99  def rodar(codigo, nome, testes_json, entrada_json, modo):
+js/nucleo/PyodideWorker.js:3-3  importScripts("https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.j
+js/nucleo/PyodideWorker.js:33-58  try:
+js/nucleo/PyodideWorker.js:44-58  ns = {"__name__": "__main__"}
+js/nucleo/PyodideWorker.js:60-99  funcao = ns.get(nome)
+js/nucleo/PyodideWorker.js:67-99  for t in testes:
+js/nucleo/TempoReal.js:29-47  observar(canais, carregar, aoAtualizar, aoFalhar = () => {}) {
+js/nucleo/TempoReal.js:49-68  async #abrir() {
+js/nucleo/TempoReal.js:70-82  async #ler(leitor) {
+js/nucleo/TempoReal.js:84-95  #processar(bloco) {
+js/paginas/Pagina.js:15-27  async iniciar() {
+js/paginas/PaginaCadastro.js:23-30  #validar(nome, email, senha, senha2) {
+js/servicos/ControleAcesso.js:14-23  async exigirAutenticacao({ exigirPerfil = true, exigirAdmin = false } 
+js/servicos/GerenciadorEnigmas.js:12-14  preparar() {
+js/servicos/GerenciadorEnigmas.js:36-39  static #embrulhar(enigma, codigo) {
+js/servicos/GerenciadorEnigmas.js:47-64  async validar(enigma, codigo, codigoDigitado) {
+js/servicos/Partida.js:113-123  async criar(dificuldade) {
+js/servicos/Partida.js:200-225  async interagir(hotspot) {
+js/servicos/Partida.js:238-241  contador(chave, codigoInicial = "") {
+js/servicos/Partida.js:259-278  async validar(chave, codigo, codigoDigitado) {
+js/servicos/Partida.js:57-64  #aplicar(estado) {
+js/servicos/ServicoAutenticacao.js:26-31  #resultado(resposta) {
+js/servicos/ServicoChat.js:12-22  observar(idGrupo, aoAtualizar, aoFalhar) {
+js/servicos/ServicoPartida.js:13-21  async deslocamentoMs() {
+js/servicos/ServicoPartida.js:53-59  async registrarResolucao(gid, chave, { dicas, tentativas }) {
+login.html:121-121  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></scr
+privacidade.html:129-129  <h2>10. Crianças e adolescentes</h2>
+privacidade.html:89-89  <li><strong>CDNs</strong> (jsDelivr, unpkg e Google Fonts): recebem, c
+render.yaml:11-40  healthCheckPath: /api/health
+render.yaml:3-12  services:
+render.yaml:7-7  plan: free

@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f5f1">
+<title>Diagramas e fluxos · Escape.py</title>
+<link rel="stylesheet" href="assets/guia.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar" aria-label="Navegação do guia">
+  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">E</span><span><strong>Escape.py</strong><small>Guia de estudos do projeto</small></span></a>
+  <label class="small" for="busca" style="display:block;margin-top:14px">Buscar em todo o guia</label>
+  <input id="busca" class="nav-search" type="search" placeholder="Ex.: JWT, gameHistory, SSE…" autocomplete="off">
+  <div id="achados" hidden></div>
+  <nav id="navegacao">
+    <div class="nav-group"><p class="nav-title">Páginas</p><div class="nav-list paginas"><a href="index.html"><b>Guia base</b><small>Fundamentos e visão geral</small></a><a href="codigo.html"><b>Código por funcionalidade</b><small>Do clique ao resultado</small></a><a href="api-banco.html"><b>API, middlewares e banco</b><small>Endpoints, cadeia e MongoDB</small></a><a href="diagramas.html" class=atual aria-current=page><b>Diagramas e fluxos</b><small>Arquitetura e sequências</small></a><a href="seguranca.html"><b>Segurança, LGPD e limites</b><small>Ameaças, provas e lacunas</small></a><a href="testes.html"><b>Testes e demonstração</b><small>Comandos e roteiro ao vivo</small></a><a href="simposio.html"><b>O que a banca cobrou</b><small>Análise do simpósio</small></a><a href="simulado.html"><b>Simulado da banca</b><small>Perguntas e respostas</small></a></div></div>
+    <div class="nav-group"><p class="nav-title">Nesta página</p><div class="nav-list" id="locais"><a href="#arquitetura">1. Arquitetura geral</a><a href="#componentes">2. Componentes</a><a href="#seq-auth">3. Sequência de autenticação</a><a href="#seq-grupos">4. Criação e entrada em grupos</a><a href="#seq-chat">5. Sequência do chat</a><a href="#seq-python">6. Execução de um desafio Python</a><a href="#seq-sync">7. Sincronização do jogo</a><a href="#seq-fim">8. Finalização e persistência</a><a href="#seguranca">9. Segurança e autorização</a><a href="#galeria">Diagramas detalhados da equipe</a><a href="#revisar">O que corrigir nos diagramas do repositório</a></div></div>
+  </nav>
+  <div class="side-foot">Baseado no código do repositório Escape-Room-PFC, branch main, commit <a href="https://github.com/pfcumc2026/Escape-Room-PFC/tree/37cd1d6393ed8550972f173e519ec6925c65aec6">37cd1d6</a> (18/11/2026).</div>
+</aside>
+<main class="main" id="inicio">
+  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="menu-button" id="menu-toggle" aria-label="Abrir navegação" aria-expanded="false">☰</button><span class="crumb">Guia para a banca / Diagramas e fluxos</span></div><div class="top-actions"><button class="icon-button" id="tema-toggle" type="button" aria-label="Alternar tema">Tema: claro</button><button class="icon-button" id="imprimir" type="button">Imprimir / PDF</button></div></header>
+  <article class="content">
+<header class="intro"><span class="eyebrow">Preparação para a banca</span><h1>Diagramas e fluxos reais</h1><p>Nove diagramas montados a partir do código atual, cada um com a explicação. Use &quot;Ampliar&quot; e role para os lados no celular.</p></header>
+<div class="note">Os diagramas interativos usam a biblioteca Mermaid, carregada pela internet. Sem conexão, aparece o texto do diagrama. Para a apresentação, abram a página antes ou imprimam em PDF.</div>
+<section class="section" id="arquitetura" data-title="1. Arquitetura geral"><div class="section-head"><span class="section-number">01</span><div><h2>1. Arquitetura geral</h2><p class="lede">Onde cada parte roda e como conversa.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">flowchart TB
+  subgraph NAV[&quot;Navegador do jogador&quot;]
+    UI[&quot;Páginas e componentes&lt;br/&gt;HTML, CSS, ES Modules&quot;]
+    WK[&quot;Web Worker&lt;br/&gt;Pyodide 0.26.4&quot;]
+    UI &lt;-- postMessage --&gt; WK
+  end
+  EST[&quot;Hospedagem estática&lt;br/&gt;(Firebase Hosting no firebase.json)&quot;]
+  subgraph API[&quot;API no Render: Node.js + Express 5&quot;]
+    MW[Middlewares] --&gt; CT[Controllers] --&gt; SV[Services]
+    TR[&quot;tempoReal.js&lt;br/&gt;conexões em memória&quot;]
+    SV --&gt; TR
+  end
+  DB[(&quot;MongoDB Atlas&quot;)]
+  BR[Brevo]
+  GO[Google OIDC]
+  FB[&quot;Firebase REST&lt;br/&gt;só migração&quot;]
+  EST -- arquivos --&gt; UI
+  UI -- &quot;HTTPS + JSON + Bearer&quot; --&gt; MW
+  TR -- &quot;SSE: canal que mudou&quot; --&gt; UI
+  SV -- driver mongodb --&gt; DB
+  SV --&gt; BR
+  SV --&gt; GO
+  SV -.-&gt; FB
+  CDN[&quot;CDNs e DiceBear&quot;] -.-&gt; UI
+  CDN -.-&gt; WK</pre></div></figure>
+<ul><li><strong>Quem inicia:</strong> o navegador, ao baixar os arquivos estáticos.</li><li><strong>Participantes:</strong> o front decide a aparência; a API decide permissões e regras; o banco persiste.</li><li><strong>Dados:</strong> JSON por HTTPS; pelo SSE vai apenas o nome do canal.</li><li><strong>Resultado:</strong> só a API tem a credencial do banco.</li></ul></section>
+<section class="section" id="componentes" data-title="2. Componentes"><div class="section-head"><span class="section-number">02</span><div><h2>2. Componentes</h2><p class="lede">Quais módulos dependem de quais.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">flowchart TB
+  subgraph Front
+    M[main.js] --&gt; PG[paginas/Pagina*]
+    PG --&gt; CP[&quot;componentes/&lt;br/&gt;MesaDeJogo, PainelEnigma, PainelChat&quot;]
+    PG --&gt; SF[&quot;servicos/&lt;br/&gt;Servico*, Partida&quot;]
+    CP --&gt; SF
+    SF --&gt; MD[&quot;modelos/&lt;br/&gt;EstadoPartida, Enigma, Pontuacao&quot;]
+    SF --&gt; API2[nucleo/Api.js]
+    SF --&gt; TRC[nucleo/TempoReal.js]
+    SF --&gt; GE[nucleo/GeradorProcedural.js]
+    SF --&gt; EX[nucleo/ExecutorPython.js] --&gt; PW[nucleo/PyodideWorker.js]
+  end
+  subgraph Back[&quot;backend/src&quot;]
+    SRV[server.js] --&gt; APP[app.js]
+    APP --&gt; MWB[&quot;middleware/&quot;]
+    APP --&gt; RT[&quot;routes/&quot;] --&gt; CTR[&quot;controllers/&quot;] --&gt; SVC[&quot;services/&quot;]
+    SVC --&gt; UT[&quot;utils/&quot;]
+    SRV --&gt; CFG[&quot;config/ambiente.js, banco.js&quot;]
+  end
+  API2 -- REST --&gt; APP
+  TRC -- &quot;GET /api/events&quot; --&gt; APP
+  SVC --&gt; M2[(&quot;MongoDB&quot;)]</pre></div></figure>
+<ul><li><code>server.js</code> monta o objeto <code>ctx</code> (banco, e-mail, Google, tempo real) e o injeta em <code>criarApp(ctx)</code>. Os testes trocam essas dependências.</li><li>No front, a direção é página → componente/serviço → núcleo.</li></ul></section>
+<section class="section" id="seq-auth" data-title="3. Sequência de autenticação"><div class="section-head"><span class="section-number">03</span><div><h2>3. Sequência de autenticação</h2><p class="lede">Login com senha, 2FA e requisição protegida.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">sequenceDiagram
+  autonumber
+  actor U as Usuário
+  participant P as PaginaLogin
+  participant S as ServicoAutenticacao / Api
+  participant M as limite + routes/autenticacao
+  participant A as services/autenticacao.js
+  participant DB as MongoDB
+  U-&gt;&gt;P: submit (e-mail, senha)
+  P-&gt;&gt;S: entrarComSenha()
+  S-&gt;&gt;M: POST /api/auth/login
+  M-&gt;&gt;A: controller.entrar → entrar(ctx, body)
+  A-&gt;&gt;DB: users.findOne({email})
+  A-&gt;&gt;A: bcrypt.compare(senha, passwordHash)
+  alt senha errada
+    A--&gt;&gt;S: 401 CREDENCIAIS_INVALIDAS
+  else 2FA ativo
+    A-&gt;&gt;DB: authTokens.insertOne(hash do desafio, 5 min)
+    A--&gt;&gt;S: {etapa:&quot;2fa&quot;, desafio}
+    U-&gt;&gt;P: código de 6 dígitos
+    S-&gt;&gt;A: POST /api/auth/2fa/verify
+    A-&gt;&gt;DB: lastUsedStep e consumo do desafio
+    A--&gt;&gt;S: {etapa:&quot;concluido&quot;, token, usuario}
+  else sem 2FA
+    A-&gt;&gt;DB: auditLogs.insertOne(&quot;login&quot;)
+    A--&gt;&gt;S: {etapa:&quot;concluido&quot;, token, usuario}
+  end
+  S-&gt;&gt;S: localStorage[&quot;escape-sessao&quot;] = token
+  S-&gt;&gt;M: GET /api/groups (Authorization: Bearer)
+  M-&gt;&gt;M: autenticar: jwt.verify + users.findOne + sessionVersion
+  M--&gt;&gt;S: 200 ou 401 TOKEN_INVALIDO</pre></div></figure>
+<ul><li><strong>Início:</strong> o <code>submit</code> do formulário. <strong>Entra:</strong> e-mail e senha. <strong>Sai:</strong> JWT assinado com o id e a versão da sessão.</li><li>O token completo só existe depois de todos os fatores.</li></ul></section>
+<section class="section" id="seq-grupos" data-title="4. Criação e entrada em grupos"><div class="section-head"><span class="section-number">04</span><div><h2>4. Criação e entrada em grupos</h2><p class="lede">Do botão ao vetor <code>members</code>.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">sequenceDiagram
+  autonumber
+  actor D as Dono
+  actor C as Convidado
+  participant F as Páginas + ServicoGrupos
+  participant R as middlewares &quot;jogador&quot;
+  participant G as services/grupos.js
+  participant DB as MongoDB
+  participant T as tempoReal.js
+  D-&gt;&gt;F: nome do grupo
+  F-&gt;&gt;R: POST /api/groups {name}
+  R-&gt;&gt;G: criarGrupo()
+  G-&gt;&gt;DB: users.updateOne (reserva de 30 s)
+  G-&gt;&gt;DB: groups.insertOne({ownerId, members:[dono], inviteCode})
+  G-&gt;&gt;DB: auditLogs &quot;grupo_criado&quot;
+  G-&gt;&gt;T: notificar([dono], &quot;grupos&quot;)
+  G--&gt;&gt;F: 201 grupo
+  D--&gt;&gt;C: link ou QR Code (entrar.html)
+  C-&gt;&gt;F: PaginaEntrar: confirmar
+  F-&gt;&gt;R: POST /api/groups/:id/join {code}
+  R-&gt;&gt;G: entrarComCodigo()
+  G-&gt;&gt;DB: findOneAndUpdate(vaga livre e código atual, $push)
+  alt cheio ou código trocado
+    G--&gt;&gt;F: 409 CONVITE_INVALIDO
+  else entrou
+    G-&gt;&gt;T: notificar(membros, &quot;grupo:id&quot;)
+    G--&gt;&gt;F: 200 grupo
+    T--&gt;&gt;F: SSE para o dono, que faz novo GET
+  end</pre></div></figure>
+<ul><li><strong>Quem decide a vaga:</strong> o filtro do <code>findOneAndUpdate</code>, não a tela.</li><li>O convite por username segue outro caminho (<code>invites</code>), mostrado na galeria abaixo.</li></ul></section>
+<section class="section" id="seq-chat" data-title="5. Sequência do chat"><div class="section-head"><span class="section-number">05</span><div><h2>5. Sequência do chat</h2><p class="lede">Três requisições, um aviso.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">sequenceDiagram
+  autonumber
+  actor A as Jogadora A
+  participant FA as PainelChat / ServicoChat
+  participant API as routes/grupos + controller
+  participant CH as services/chat.js
+  participant DB as MongoDB
+  participant T as tempoReal.js
+  participant FB as Navegador de B (TempoReal.js)
+  FB-&gt;&gt;T: GET /api/events (conexão fica aberta)
+  A-&gt;&gt;FA: submit do formulário
+  FA-&gt;&gt;API: POST /api/groups/:id/messages {text}
+  API-&gt;&gt;CH: enviarMensagem()
+  CH-&gt;&gt;DB: grupoComoMembro: groups.findOne
+  CH-&gt;&gt;DB: última mensagem e contagem (limites)
+  CH-&gt;&gt;DB: messages.insertOne({..., expiresAt +24h})
+  CH-&gt;&gt;T: avisarGrupo(members, &quot;chat:id&quot;)
+  T--&gt;&gt;FB: data: {&quot;canal&quot;:&quot;chat:id&quot;}
+  CH--&gt;&gt;FA: 201 mensagem
+  FB-&gt;&gt;API: GET /api/groups/:id/messages
+  API-&gt;&gt;CH: listarMensagens() (confere membro de novo)
+  CH-&gt;&gt;DB: find + sort + limit 60
+  CH--&gt;&gt;FB: lista
+  FB-&gt;&gt;FB: Chat.renderizar com textContent</pre></div></figure>
+<ul><li>O aviso não leva o texto; quem foi removido do grupo não consegue buscá-lo.</li></ul></section>
+<section class="section" id="seq-python" data-title="6. Execução de um desafio Python"><div class="section-head"><span class="section-number">06</span><div><h2>6. Execução de um desafio Python</h2><p class="lede">Duas threads e um registro no servidor.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">sequenceDiagram
+  autonumber
+  actor J as Jogador
+  participant PE as PainelEnigma
+  participant PT as Partida.validar
+  participant GE as GerenciadorEnigmas
+  participant EX as ExecutorPython
+  participant W as PyodideWorker (outra thread)
+  participant API as partidas.registrarEnigma
+  J-&gt;&gt;PE: &quot;Testar e abrir&quot; (ou Ctrl+Enter)
+  PE-&gt;&gt;PT: validar(chave, código, códigoDigitado)
+  PT-&gt;&gt;GE: validar(enigma, ...)
+  GE-&gt;&gt;EX: executar({codigo, nomeFuncao, testes, entrada})
+  EX-&gt;&gt;W: postMessage({id, ...})
+  Note over EX: setTimeout 6 s
+  W-&gt;&gt;W: HARNESS: parse, exec, testes
+  alt travou
+    EX-&gt;&gt;W: terminate()
+    EX--&gt;&gt;GE: {fase:&quot;tempo_esgotado&quot;}
+  else respondeu
+    W--&gt;&gt;EX: {tipo:&quot;resultado&quot;, id, resultado}
+    EX--&gt;&gt;GE: resultado
+  end
+  GE-&gt;&gt;GE: confere o código do mecanismo
+  GE--&gt;&gt;PT: TentativaEnigma
+  alt resolvida
+    PT-&gt;&gt;API: POST /api/games/:gid/puzzles/:chave {hints, attempts}
+    API--&gt;&gt;PT: 204 ou 409
+  else falhou
+    PT-&gt;&gt;PT: tentativas++ (só na memória)
+  end
+  PT--&gt;&gt;PE: mostra console e feedback</pre></div></figure>
+<ul><li><strong>O código Python nunca vai para a API.</strong> O servidor recebe só a afirmação de que foi resolvido.</li></ul></section>
+<section class="section" id="seq-sync" data-title="7. Sincronização do jogo"><div class="section-head"><span class="section-number">07</span><div><h2>7. Sincronização do jogo</h2><p class="lede">Um age, todos recarregam.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">sequenceDiagram
+  autonumber
+  participant A as Navegador A
+  participant B as Navegador B
+  participant API as services/partidas.js
+  participant DB as MongoDB
+  participant T as tempoReal.js
+  A-&gt;&gt;API: GET /api/time (deslocamento do relógio)
+  A-&gt;&gt;API: GET /api/games/:gid
+  B-&gt;&gt;API: GET /api/games/:gid
+  par duas ações ao mesmo tempo
+    A-&gt;&gt;API: POST puzzles/p1
+  and
+    B-&gt;&gt;API: POST puzzles/p1
+  end
+  API-&gt;&gt;DB: updateOne({solved.p1 não existe, ...})
+  DB--&gt;&gt;API: A: modifiedCount 1
+  DB--&gt;&gt;API: B: modifiedCount 0
+  API--&gt;&gt;A: 204
+  API--&gt;&gt;B: 409 ENIGMA_JA_RESOLVIDO
+  API-&gt;&gt;T: notificar(membros, &quot;partida:gid&quot;)
+  T--&gt;&gt;A: canal mudou
+  T--&gt;&gt;B: canal mudou
+  A-&gt;&gt;API: GET /api/games/:gid
+  B-&gt;&gt;API: GET /api/games/:gid
+  A-&gt;&gt;A: Partida.#aplicar → #desenhar
+  B-&gt;&gt;B: Partida.#aplicar → #desenhar</pre></div></figure>
+<ul><li>O front trata <code>ENIGMA_JA_RESOLVIDO</code> como sucesso (<code>ServicoPartida.registrarResolucao</code>).</li></ul></section>
+<section class="section" id="seq-fim" data-title="8. Finalização e persistência"><div class="section-head"><span class="section-number">08</span><div><h2>8. Finalização e persistência</h2><p class="lede">Do enigma final ao gráfico.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">sequenceDiagram
+  autonumber
+  participant J as Jogador
+  participant C as partidasController
+  participant P as services/partidas.js
+  participant Q as pontuacao.js
+  participant H as historico.js
+  participant DB as MongoDB
+  J-&gt;&gt;C: POST puzzles/pf {hints, attempts, score}
+  C-&gt;&gt;P: registrarEnigma()
+  P-&gt;&gt;DB: games.findOne
+  P-&gt;&gt;Q: calcularPontuacao(dados do servidor + usos)
+  P-&gt;&gt;DB: updateOne(pistas e demais enigmas existem, prazo) → COMPLETED
+  P-&gt;&gt;H: arquivarPartidaDoGrupo()
+  H-&gt;&gt;DB: gameHistory.updateOne(upsert, $setOnInsert)
+  P-&gt;&gt;DB: auditLogs &quot;partida_concluida&quot;
+  P--&gt;&gt;J: 204 e aviso SSE
+  J-&gt;&gt;P: GET /api/games/:gid → PainelResultado
+  J-&gt;&gt;P: GET /api/users/me/stats (dashboard)
+  P-&gt;&gt;DB: gameHistory.find({players: uid}) + games ativos</pre></div></figure>
+<ul><li><code>score</code> do corpo é só conferido quanto ao formato; o valor gravado é o calculado no servidor.</li><li>Desistência e expiração seguem <code>encerrarPartida</code>, que também arquiva, com <code>score: null</code>.</li></ul></section>
+<section class="section" id="seguranca" data-title="9. Segurança e autorização"><div class="section-head"><span class="section-number">09</span><div><h2>9. Segurança e autorização</h2><p class="lede">As barreiras, em ordem, e o buraco.</p></div></div>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><pre class="mermaid">flowchart TD
+  REQ[Requisição] --&gt; O{Origem permitida?}
+  O -- não --&gt; X1[403]
+  O --&gt; RL{Dentro do limite?}
+  RL -- não --&gt; X2[429]
+  RL --&gt; T{&quot;JWT válido e sessão atual?&quot;}
+  T -- não --&gt; X3[401]
+  T --&gt; E{&quot;E-mail e perfil?&quot;}
+  E -- não --&gt; X4[403]
+  E --&gt; PAP{&quot;Rota de admin?&quot;}
+  PAP -- &quot;sim e não é admin&quot; --&gt; X5[403]
+  PAP --&gt; GR{&quot;Membro / dono do grupo?&quot;}
+  GR -- não --&gt; X6[403]
+  GR --&gt; VAL{&quot;Dados válidos?&quot;}
+  VAL -- não --&gt; X7[400]
+  VAL --&gt; EST{&quot;Estado permite? (filtro atômico)&quot;}
+  EST -- não --&gt; X8[409]
+  EST --&gt; GRAVA[(Grava)]
+  GRAVA -. &quot;NÃO verificado:&lt;br/&gt;se o Python foi resolvido&quot; .-&gt; GAP[&quot;lacuna conhecida&quot;]
+  style GAP stroke-dasharray: 5 5</pre></div></figure>
+<ul><li><code>CORS</code> só limita navegadores; um script direto passa dessa primeira barreira e para na autenticação.</li></ul></section>
+<section class="section" id="galeria" data-title="Diagramas detalhados da equipe"><div class="section-head"><span class="section-number">10</span><div><h2>Diagramas detalhados da equipe</h2><p class="lede">Sequências com nomes de métodos, já alinhadas à versão Express + MongoDB. Toque em &quot;Ampliar&quot;.</p></div></div>
+<div class="galeria">
+<h3>Cadastro e verificação de e-mail</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/cadastro.png" alt="Sequência de cadastro e verificação de e-mail" loading="lazy"></div></figure>
+<h3>Login, 2FA e logout</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/login.png" alt="Sequência de login, segundo fator e logout" loading="lazy"></div></figure>
+<h3>Login com Google</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/google.png" alt="Sequência de login com Google" loading="lazy"></div></figure>
+<h3>Perfil</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/perfil.png" alt="Sequência de verificação de username e salvamento do perfil" loading="lazy"></div></figure>
+<h3>Grupos: entrar e responder convite</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/grupos-entrar.png" alt="Sequência de entrada em grupo e resposta a convite" loading="lazy"></div></figure>
+<h3>Grupos: sair, remover, renovar código e excluir</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/grupos-gerir.png" alt="Sequência de gestão de grupos" loading="lazy"></div></figure>
+<h3>Chat (tela do grupo)</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/chat.png" alt="Sequência do chat do grupo" loading="lazy"></div></figure>
+<h3>Partida: criar, entrar e iniciar</h3>
+<figure class="diagrama"><div class="diagrama-acoes"><button type="button" class="ampliar">Ampliar</button></div><div class="diagrama-rolagem"><img src="assets/diagramas/partida.png" alt="Sequência de criação, entrada e início da partida" loading="lazy"></div></figure>
+</div>
+<p>O diagrama de chat usa <code>PaginaGrupo</code>; dentro da sala, o mesmo caminho começa em <code>PainelChat</code>.</p></section>
+<section class="section" id="revisar" data-title="O que corrigir nos diagramas do repositório"><div class="section-head"><span class="section-number">11</span><div><h2>O que corrigir nos diagramas do repositório</h2><p class="lede">A pasta <code>diagramas/</code> do GitHub ainda descreve a versão antiga.</p></div></div>
+<div class="note alerta">Não projetem os arquivos abaixo sem atualizar: a banca pode perguntar &quot;onde está esse Firebase no código?&quot;.</div>
+<div class="table-wrap"><table><thead><tr><th>Arquivo em <code>diagramas/</code></th><th>Problema verificado</th><th>Correção</th></tr></thead><tbody><tr><td><code>bpmn - autent.png</code></td><td>raia <strong>Firebase</strong> autenticando</td><td>trocar por API própria + MongoDB e incluir verificação de e-mail</td></tr><tr><td><code>bpmn - chat.png</code></td><td>grava no Firebase e &quot;registra auditoria&quot; no envio</td><td><code>messages</code> no MongoDB; <strong>não há</strong> auditoria de mensagem</td></tr><tr><td><code>bpmn - partida.png</code></td><td>Firebase; mostra o servidor registrando tentativa errada e a aplicação validando o código</td><td>validação no navegador; tentativas não vão ao servidor quando falham</td></tr><tr><td><code>bpmn - grupos.png</code></td><td>omite a entrada por link/QR Code</td><td>acrescentar o fluxo <code>join</code></td></tr><tr><td><code>diagrama de classe - parte 3</code></td><td><code>ServicoChat</code> com <code>Firestore</code>, <code>deSnapshot</code> e contador em <code>groups/{gid}/rate</code></td><td>usar <code>Api</code>, <code>tempoReal</code>, <code>Mensagem.deDados</code>; limite no servidor</td></tr><tr><td>demais diagramas de classe</td><td>não foram conferidos classe a classe neste guia</td><td>revisar procurando <code>Firebase</code>, <code>Timestamp</code> e <code>Snapshot</code></td></tr></tbody></table></div></section>
+  </article>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script src="assets/busca.js"></script>
+<script src="assets/guia.js"></script>
+</body>
+</html>

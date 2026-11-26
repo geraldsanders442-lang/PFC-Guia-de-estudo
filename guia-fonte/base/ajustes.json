@@ -1,0 +1,73 @@
+{
+ "secoes": {
+  "testes": "testes.md",
+  "estado-atual": "estado.md",
+  "mongodb": "mongo.md"
+ },
+ "trocas": [
+  [
+   "re:<div class=\"note\"><strong>Importante:</strong>.*?</div>",
+   "<div class=\"note\"><strong>Como usar:</strong> esta página ensina os fundamentos. Para a banca, siga: <a href=\"codigo.html\">código por funcionalidade</a> → <a href=\"api-banco.html\">API e banco</a> → <a href=\"diagramas.html\">diagramas</a> → <a href=\"seguranca.html\">segurança e LGPD</a> → <a href=\"testes.html\">testes</a> → <a href=\"simposio.html\">o que a banca cobrou</a> → <a href=\"simulado.html\">simulado</a>. Tudo se refere à branch <code>main</code> do repositório (18/11/2026). O documento acadêmico inicial descreve uma proposta anterior com Firebase.</div>"
+  ],
+  [
+   "versao-1-etapa1/\n",
+   "Escape-Room-PFC/\n"
+  ],
+  [
+   "└── test/              testes automatizados",
+   "└── test/              testes de integração"
+  ],
+  [
+   "O Worker no servidor guarda conexões em memória",
+   "O serviço <code>tempoReal.js</code>, no servidor, guarda as conexões em memória"
+  ],
+  [
+   "o guia em si, ao contrário, não depende de CDN.",
+   "neste guia, apenas a página de diagramas usa um CDN (Mermaid). O dashboard usa também Chart.js 4.4.1 e o QR Code usa a biblioteca QRCode.js."
+  ],
+  [
+   "re:<p>Pode tentar\\. O servidor valida formato e faixa.*?</p>",
+   "<p>O servidor confere o formato do <code>score</code> enviado e o <strong>ignora</strong>: a pontuação gravada é calculada em <code>calcularPontuacao</code>. Mas as dicas, as tentativas e a própria resolução são informadas pelo cliente, então ainda é possível trapacear. Veja <a href=\"seguranca.html#provas\">a prova</a>.</p>"
+  ],
+  [
+   "re:<p>O unitário \\( <code>test/unidade/</code>.*?</p>|<p>O unitário \\(<code>test/unidade/</code>.*?</p>",
+   "<p>O unitário chama uma função isolada com o banco substituído por <code>mock.fn()</code>; os 64 existentes estão apenas na cópia local anterior. O de integração, presente na branch main, sobe a API com MongoDB em memória e faz requisições HTTP reais.</p>"
+  ],
+  [
+   "por exemplo o teste de <code>Pontuacao.calcular</code> em <code>test/unidade/jogo.test.js</code>",
+   "por exemplo o teste de <code>Pontuacao.calcular</code> na cópia local (<code>test/unidade/jogo.test.js</code>, ainda fora da branch main)"
+  ],
+  [
+   "re:<li><code>backend/test/</code>[^<]*(<code>[^<]*</code>[^<]*)*</li>",
+   "<li><code>backend/test/</code> — testes de integração da API.</li>"
+  ],
+  [
+   "Trecho real · Api.requisitar",
+   "Resumo didático · Api.requisitar"
+  ],
+  [
+   "Trecho real · middleware/autenticacao.js",
+   "Resumo didático · middleware/autenticacao.js"
+  ],
+  [
+   "Trecho real · services/partidas.js, registrarEnigma",
+   "Resumo didático · ideia do filtro em registrarEnigma (código exato na página API e na de código)"
+  ],
+  [
+   "Trecho real · TempoReal.observar",
+   "Resumo didático · TempoReal.observar"
+  ],
+  [
+   "Padrão real · js/servicos/ServicoPartida.js",
+   "Padrão resumido · serviços do front (ServicoPartida e ServicoGrupos)"
+  ],
+  [
+   "re:(<summary>Quais são as limitações que vocês reconhecem\\?</summary><div class=\"answer\"><p>)",
+   "<summary>Quais são as limitações que vocês reconhecem?</summary><div class=\"answer\"><p><strong>A principal:</strong> o servidor não confere se o enigma foi resolvido, e dicas e tentativas vêm do cliente (<a href=\"seguranca.html#provas\">ver todas</a>). "
+  ],
+  [
+   "<h3>Fluxo resumido de sessão</h3>",
+   "<div class=\"note\">Além disso há verificação em duas etapas (TOTP) e login com Google (OAuth 2.0 com PKCE), explicados em <a href=\"codigo.html#login\">Login, sessão e 2FA</a>.</div><h3>Fluxo resumido de sessão</h3>"
+  ]
+ ]
+}

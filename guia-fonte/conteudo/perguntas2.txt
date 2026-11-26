@@ -1,0 +1,463 @@
+=== auth-hash | Autenticação | alta
+P: Como as senhas são protegidas? Mostrem no banco.
+Q: Se a senha está em texto puro. Foi cobrado no simpósio.
+O: Guardamos só o hash bcrypt com custo 12. O bcrypt gera um salt por senha e é propositalmente lento. No login comparamos a senha digitada com o hash; não há como "descriptografar".
+E: Hash é de mão única, diferente de criptografia. O texto `$2b$12$...` traz versão, custo, salt e resultado. Limitamos a 72 bytes porque o bcrypt ignora o excedente.
+C: backend/src/services/autenticacao.js :: export function gerarHash ;; backend/src/utils/validacao.js :: export function validarSenha
+S: Duas senhas iguais geram o mesmo hash? -> Não, por causa do salt.
+S: Por que não SHA-256? -> É rápido demais para senhas. Usamos SHA-256 apenas em tokens aleatórios longos.
+D: Atlas: `users` e o campo `passwordHash`.
+
+=== auth-confirmacao | Autenticação | alta
+P: O que acontece se a confirmação da senha for diferente, por exemplo só na maiúscula?
+Q: Testar o erro que apareceu em outro projeto.
+O: O cadastro é bloqueado com "As senhas não coincidem". A comparação é exata. É uma conferência de digitação feita no front; o servidor valida as regras da senha, mas não recebe a confirmação.
+E: Quem chamar a API direto não tem campo de confirmação, o que é aceitável porque ela protege o usuário contra erro de digitação, não o sistema. Admitam que falta o botão "mostrar senha".
+C: js/paginas/PaginaCadastro.js :: #validar(nome, email, senha, senha2) { ;; backend/src/services/autenticacao.js :: export async function cadastrar
+S: Quais as regras de senha? -> De 8 a 72 bytes, com letra e número.
+D: Digite `Senha1234` e `senha1234`.
+
+=== auth-jwt | Autenticação | alta
+P: O que é o JWT de vocês, o que vai dentro e como é validado?
+Q: Sessão sem estado e seus limites.
+O: É um token assinado com HS256. Leva o id do usuário, a versão da sessão, emissor, público e validade de 8 horas por padrão. O middleware confere a assinatura e busca o usuário no banco a cada requisição.
+E: Assinado não é cifrado: qualquer um lê o conteúdo, mas não altera. O papel não vai no token; é lido do banco, então uma mudança vale na hora. Por consultarmos o banco, a sessão não é totalmente sem estado.
+C: backend/src/services/sessao.js :: export function emitirSessao ;; backend/src/middleware/autenticacao.js :: export async function autenticar
+S: Por que fixar o algoritmo na verificação? -> Para recusar tokens assinados com outro algoritmo.
+S: E se o segredo vazar? -> Dá para forjar sessões; é preciso trocar o segredo, o que derruba todos.
+D: Altere um caractere do token no localStorage e recarregue.
+
+=== auth-logout | Autenticação | alta | dificil
+P: Depois do logout, o token antigo ainda funciona?
+Q: Procurar falha de revogação.
+O: Sim, até expirar. O logout registra a ação e apaga o token no navegador, mas não revoga no servidor. A redefinição de senha revoga, porque incrementa a versão da sessão. A correção é incrementar essa versão também no logout.
+E: Comprovado em teste: após `POST /auth/logout`, `GET /users/me` com o mesmo token respondeu 200. Incrementar `sessionVersion` encerraria todas as sessões; para encerrar uma só seria preciso uma lista de sessões.
+C: backend/src/controllers/autenticacaoController.js :: export async function sair ;; backend/src/services/autenticacao.js :: export async function redefinirSenha
+S: Trocar o 2FA derruba sessões? -> Não.
+D: Mostre o código e proponha a linha `$inc: { sessionVersion: 1 }`.
+
+=== auth-2fa | Autenticação | média
+P: Como funciona a verificação em duas etapas?
+Q: TOTP e proteção do segredo.
+O: O usuário lê um QR Code no aplicativo autenticador. O servidor guarda o segredo cifrado e só ativa depois do primeiro código válido. No login, a sessão só sai após o código; cada código vale uma vez e há 10 códigos de recuperação.
+E: TOTP usa HMAC do segredo com o tempo em períodos de 30 s, com tolerância de um período. `lastUsedStep` impede reuso. Cinco erros descartam o desafio. AES-256-GCM garante sigilo e integridade.
+C: backend/src/services/doisFatores.js :: export async function conferirSegundoFator ;; backend/src/utils/segredos.js :: export function cifrar ;; backend/src/services/autenticacao.js :: export async function verificarSegundoFator
+S: Por que cifrar em vez de fazer hash? -> O servidor precisa do segredo original para calcular o código.
+D: Ative em Configurações e faça login.
+
+=== auth-google | Autenticação | média | dificil
+P: Como o login com Google impede que alguém falsifique o retorno?
+Q: OAuth 2.0 e OpenID Connect de verdade.
+O: Geramos `state`, `nonce` e o verificador PKCE. O `state` precisa bater com o cookie e com o registro de uso único no banco. O servidor troca o código pelo `id_token` e valida assinatura, emissor, público, nonce e e-mail verificado.
+E: O JWT da aplicação não vai na URL: enviamos um código de 2 minutos trocado por POST. Conta já ligada a outro Google não é sobrescrita; conta nunca verificada é assumida por quem provou o e-mail, com a senha descartada.
+C: backend/src/services/loginGoogle.js :: export async function concluirLoginGoogle ;; backend/src/services/google.js :: async validarIdToken ;; backend/src/services/loginGoogle.js :: export async function entrarComGoogle
+S: Para que serve o PKCE? -> Impede que um código interceptado seja trocado sem o verificador.
+D: Mostre os 12 testes em `google.test.js`.
+
+=== auth-reset | Autenticação | média
+P: Como funciona a recuperação de senha e o que impede o abuso do link?
+Q: Tokens temporários.
+O: Enviamos um link com token aleatório. O banco guarda só o hash, com validade de 1 hora. O token é consumido uma vez e a redefinição derruba as sessões antigas. A resposta é igual para e-mail existente ou não.
+E: `findOneAndDelete` torna o uso atômico. Um novo pedido apaga o token anterior.
+C: backend/src/services/autenticacao.js :: export async function solicitarRedefinicao ;; backend/src/services/tokensUsoUnico.js :: export function consumirToken
+S: Se o banco vazar, dá para usar os links? -> Não diretamente, pois só há o hash.
+D: Abra o mesmo link duas vezes.
+
+=== seg-rotas | Segurança | alta
+P: O que acontece se alguém acessar uma rota protegida sem autenticação, ou com a conta errada?
+Q: Proteção efetiva no servidor.
+O: Sem token recebe 401 antes do controller. Com token válido, mas sem permissão, recebe 403: e-mail não verificado, perfil incompleto, não ser admin ou não ser membro do grupo.
+E: Os middlewares são aplicados por router (`r.use(jogador)`), e a permissão por grupo é conferida no service.
+C: backend/src/middleware/autenticacao.js :: export async function autenticar ;; backend/src/services/grupos.js :: export async function grupoComoMembro
+S: Esconder o botão no front protege? -> Não; é só interface.
+D: Chamadas sem token e com outro usuário; há testes para ambos.
+
+=== seg-grupo | Segurança | alta
+P: Um usuário consegue ver dados de outro grupo trocando o id na URL?
+Q: Falha de controle de acesso (IDOR).
+O: Não para grupo, chat, partida e convites: o servidor confere se o id do token está na lista de membros, ou se é o dono. Perfil público e status online são visíveis a qualquer usuário verificado, por decisão do projeto.
+E: O id do usuário nunca vem do corpo. Executamos o teste: leitura de grupo, chat, envio e partida por um estranho deram 403.
+C: backend/src/services/grupos.js :: export async function grupoComoDono ;; backend/src/controllers/usuariosController.js :: export async function perfil
+S: O que o perfil público expõe? -> Username, avatar, datas de criação do perfil e do último grupo; não expõe nome nem e-mail.
+D: Usuário B pede o grupo de A pelo console.
+
+=== seg-score | Segurança | alta | dificil
+P: O que impede um jogador de manipular a pontuação ou concluir a partida sem resolver?
+Q: A principal fragilidade.
+O: A pontuação é calculada no servidor e a enviada é ignorada. Pré-requisitos, prazo e participação também são conferidos. Porém o servidor não verifica o Python: quem chamar a API direto conclui a partida. É a nossa limitação mais importante e a correção é validar a resposta no servidor.
+E: Também as dicas e tentativas vêm do cliente. Opções de correção: o servidor recalcular o código do mecanismo a partir de modelo e variante e exigir esse valor (barato, porém calculável por quem ler o código); ou executar a função do aluno em ambiente isolado (mais seguro e mais caro); e contar dicas no servidor.
+C: backend/src/services/partidas.js :: export async function registrarEnigma ;; backend/src/services/pontuacao.js :: export function calcularPontuacao ;; js/servicos/Partida.js :: async validar(chave, codigo, codigoDigitado)
+S: Então o ranking é confiável? -> Não há ranking; e as estatísticas pessoais podem ser forjadas pelo próprio jogador.
+D: Mostre o teste "o score enviado pelo cliente é ignorado" e explique o que ele não cobre.
+
+=== seg-xss | Segurança | alta
+P: Se alguém mandar um script no chat, o que acontece?
+Q: XSS armazenado.
+O: Aparece como texto. A tela cria elementos e usa `textContent`. O servidor guarda o texto como veio. Não temos CSP, que seria uma segunda camada.
+E: `innerHTML` é usado apenas em modelos fixos; no mapa há um valor numérico da sala, que o servidor valida como número. Como o token está no localStorage, evitar XSS é essencial.
+C: js/componentes/Chat.js :: renderizar(mensagens, uid, agora) ;; js/componentes/MapaSala.js :: b.innerHTML ;; backend/src/services/salas.js :: const posicaoNoMapa
+S: Vocês sanitizam no servidor? -> Normalizamos espaços e tamanho; a proteção contra HTML é na exibição.
+D: Envie `<img src=x onerror=alert(1)>`.
+
+=== seg-csrf | Segurança | média
+P: A aplicação é vulnerável a CSRF?
+Q: Entender quando o ataque se aplica.
+O: As operações usam o token no cabeçalho Authorization, que o navegador não envia automaticamente, então um site terceiro não age pelo usuário. O único cookie é o state do login Google.
+E: CSRF explora credenciais automáticas, como cookies de sessão. O cookie `escape_google_state` é httpOnly, sameSite lax e serve para amarrar o fluxo ao navegador.
+C: js/nucleo/Api.js :: static async requisitar ;; backend/src/controllers/autenticacaoController.js :: function opcoesCookie
+S: Se mudassem para cookie de sessão? -> Precisaríamos de proteção anti-CSRF.
+D: Aba Rede: cabeçalho Authorization.
+
+=== seg-rate | Segurança | alta | dificil
+P: Como funciona o rate limiting? Dá para contornar?
+Q: Conhecimento dos limites do mecanismo.
+O: 20 tentativas a cada 15 minutos nas rotas de autenticação e 600 requisições a cada 5 minutos no geral, por IP. Fica em memória. Quem usa vários IPs contorna, e pessoas na mesma rede dividem o limite.
+E: Um único limitador atende várias rotas de autenticação, então erros de login bloqueiam também a recuperação de senha. `trust proxy: 1` faz o Express usar o IP informado pelo proxy do Render. Reiniciar zera os contadores. O chat tem limite próprio, que falha sob envios simultâneos.
+C: backend/src/middleware/limites.js :: export function criarLimites ;; backend/src/app.js :: app.set("trust proxy", 1)
+S: Quantas tentativas até bloquear? -> Observado: as 20 primeiras 401, a seguir 429.
+D: Mostre o teste "bloqueia excesso de tentativas de login"; não esgote o limite ao vivo.
+
+=== seg-segredos | Segurança | alta
+P: Onde estão as credenciais? Alguma está no repositório?
+Q: Foi a crítica mais dura do simpósio.
+O: Em variáveis de ambiente. O servidor não inicia sem as obrigatórias. O repositório tem só o `.env.example`; o `.gitignore` bloqueia `.env`; no Render os valores são cadastrados no painel e o segredo do JWT é gerado.
+E: Verificamos o histórico do Git: apenas exemplos fictícios. O `js/config.js` contém só o endereço público da API. A configuração web antiga do Firebase no código legado é pública por natureza.
+C: backend/src/config/ambiente.js :: export function lerAmbiente ;; render.yaml :: 11-40 ;; .gitignore
+S: O que fariam se vazasse? -> Trocar a credencial imediatamente e rever os logs; remover do histórico não basta.
+D: Abra `.env.example` e `.gitignore`. Nunca projete o `.env`.
+
+=== seg-validacao | Segurança | alta
+P: A validação é feita no front ou no back? E se eu desativar o front?
+Q: Validação autoritativa.
+O: Nos dois. O front dá retorno rápido; o servidor repete e é quem decide. Chamando a API direto, as mesmas regras valem.
+E: O PATCH de perfil usa lista de campos permitidos, impedindo enviar `role`. Há limites de tamanho e tipos em toda entrada.
+C: backend/src/services/contas.js :: export async function atualizarPerfil ;; backend/src/utils/validacao.js :: export function validarUsername
+S: Onde o servidor é menos rigoroso? -> Em `difficulty`, que aceita lista, e na configuração da sala, validada só na estrutura.
+D: `PATCH /api/users/me` com `{"role":"admin"}` retorna 400.
+
+=== seg-admin | Segurança | média
+P: O que o administrador pode ver e fazer? Ele lê o chat dos grupos?
+Q: Privilégios e privacidade.
+O: Edita salas, consulta a auditoria, que tem e-mail e ação, e usa o grupo DEMO. Pela API não há rota para ler chats de grupos dos quais não participa. O papel é concedido manualmente no banco.
+E: Quem tem acesso ao Atlas vê tudo: isso é controle organizacional. O cadastro e o perfil ignoram o campo `role` enviado pelo cliente.
+C: backend/src/routes/sistema.js :: export function rotasSistema ;; backend/src/services/grupos.js :: export async function grupoComoMembro
+S: Se tirarem o admin de alguém? -> Perde o acesso na próxima requisição, inclusive ao DEMO.
+D: Abra a auditoria com admin e com jogador.
+
+=== seg-cdn | Segurança | média | dificil
+P: Vocês confiam em scripts de terceiros. O que aconteceria se um CDN fosse comprometido?
+Q: Risco de cadeia de suprimentos.
+O: O script rodaria na nossa página e poderia ler o token. Hoje não usamos integridade nem CSP e duas bibliotecas não têm versão fixa. A melhoria é fixar versões, adicionar `integrity` e CSP, ou hospedar os arquivos.
+E: `lucide@latest` e `qrcodejs@master` mudam sem aviso. Bootstrap, Chart.js e Pyodide têm versão fixa.
+C: login.html :: lucide@latest ;; js/nucleo/PyodideWorker.js :: importScripts
+S: O que é SRI? -> Um hash no atributo `integrity` que o navegador confere antes de executar.
+D: Mostre as tags `script` do HTML.
+
+=== lgpd-aceite | LGPD | alta
+P: Onde está a comprovação de que o usuário aceitou os termos?
+Q: Pergunta quase certa: pediram o campo no banco, com data e hora.
+O: No documento do usuário temos `termsVersion` e `termsAcceptedAt`, preenchidos pelo servidor, e um registro `termos_aceitos` na auditoria. O cadastro é recusado se o aceite não for enviado. Contas migradas do sistema antigo ainda não têm esse campo.
+E: O front exige a caixa marcada e envia `acceptTerms: true`; o servidor exige exatamente `true`. No cadastro via Google, o aceite é gravado na criação da conta, inclusive vindo da tela de login, onde há apenas o aviso "ao continuar".
+C: backend/src/services/autenticacao.js :: 41-56 ;; backend/src/services/loginGoogle.js :: async function criarContaGoogle ;; backend/src/services/migracao.js :: const base = novoUsuario
+S: Se o termo mudar? -> Não há pedido de novo aceite; seria preciso comparar a versão no login.
+D: Cadastre uma conta e abra o documento no Atlas.
+
+=== lgpd-dados | LGPD | alta
+P: Quais dados pessoais vocês coletam, para quê e quem acessa?
+Q: Finalidade, necessidade e acesso.
+O: Nome, e-mail e senha em hash para a conta; username e avatar para o jogo; mensagens por 24 horas; partidas para estatísticas; e logs com e-mail e ação para segurança. Outros jogadores veem username, avatar e status; integrantes veem o chat; admins veem os logs.
+E: Ver a [tabela de ciclo de vida](seguranca.html#lgpd). A política em `privacidade.html` lista finalidades e bases legais.
+C: backend/src/services/usuarios.js :: export function perfilPublico ;; backend/src/services/auditoria.js :: export async function registrarAuditoria
+S: O sistema está em conformidade com a LGPD? -> Não afirmamos isso. Temos medidas técnicas e pendências conhecidas; a avaliação jurídica não foi feita.
+D: Mostre a política e Configurações.
+
+=== lgpd-exclusao | LGPD | alta | dificil
+P: Se eu excluir minha conta, todos os dados somem?
+Q: Testar a promessa de exclusão.
+O: Não todos. Apagamos conta, tokens, convites, participação nos grupos e o id no histórico. Ficam o id em uma partida atual, mensagens até 24 horas, logs com e-mail e, se for conta antiga, o registro no Firebase.
+E: A exclusão pede a senha, ou login recente para contas só Google. A propriedade de grupos passa a outro membro. Em teste, o id permaneceu em `games` e havia 7 logs com o e-mail. A política diz que logs duram 6 meses, mas não há rotina que os apague.
+C: backend/src/services/contas.js :: export async function excluirConta ;; backend/src/services/historico.js :: export async function removerJogadorDoHistorico
+S: Por que manter logs? -> A política cita rastreabilidade; precisa ter prazo cumprido e, idealmente, anonimização.
+D: Exclua uma conta de teste e consulte as coleções.
+
+=== lgpd-terceiros | LGPD | média
+P: Seus dados saem do sistema? Para quem?
+Q: Compartilhamento e transferência internacional.
+O: Para os provedores que operam o serviço: Atlas, Render, Brevo, Google quando escolhido, Firebase para contas antigas, DiceBear com dados não pessoais e CDNs, que recebem o IP.
+E: A política menciona que os servidores podem ficar fora do Brasil. Os contratos desses provedores não foram revisados neste material.
+C: privacidade.html :: <li><strong>CDNs ;; backend/src/services/email.js :: async enviar(
+S: A semente do avatar é dado pessoal? -> É aleatória por padrão e validada; não leva nome nem e-mail.
+D: Mostre a seção 5 da política.
+
+=== lgpd-menores | LGPD | baixa
+P: E se o jogador for menor de idade?
+Q: Cuidado com o público estudantil.
+O: A política orienta uso com consentimento do responsável, mas o sistema não pergunta idade nem coleta esse consentimento. É uma pendência.
+E: Uma solução exigiria perguntar idade e registrar o consentimento do responsável, com orientação jurídica.
+C: privacidade.html :: 10. Crian
+S: Isso impede o uso em escola? -> Exige um procedimento da instituição antes.
+D: Mostre a seção 10 da política.
+
+=== rt-sse | Comunicação em tempo real | alta
+P: Como funciona o tempo real? É WebSocket?
+Q: Tecnologia efetivamente usada.
+O: Não. Usamos Server-Sent Events. O navegador abre uma requisição que fica aberta; o servidor escreve avisos com o nome do canal que mudou; o cliente busca os dados pela API.
+E: O fluxo é de mão única, `text/event-stream`, com blocos separados por linha em branco. As ações vão por HTTP comum. Isso mantém uma só camada de autorização: a da API.
+C: backend/src/services/tempoReal.js :: abrir(uid, resposta) ;; js/nucleo/TempoReal.js :: async #abrir() ;; js/nucleo/TempoReal.js :: async #ler(leitor)
+S: Por que não WebSocket? -> Não precisamos de canal bidirecional; SSE é HTTP simples. Com conversa intensa ou jogo em ritmo rápido, WebSocket seria melhor.
+S: Qual a diferença para polling? -> No polling o cliente pergunta repetidamente; aqui o servidor avisa.
+D: Aba Rede, requisição `events`.
+
+=== rt-eventsource | Comunicação em tempo real | média | dificil
+P: Por que não usaram o EventSource do navegador?
+Q: Se entendem a restrição técnica.
+O: O EventSource não permite enviar o cabeçalho Authorization. Lemos o fluxo com `fetch` para mandar o token no cabeçalho, e por isso implementamos a leitura e a reconexão.
+E: A alternativa seria o token na URL, que vazaria em logs. `TextDecoderStream` converte bytes em texto e o buffer separa blocos completos.
+C: js/nucleo/TempoReal.js :: async #abrir()
+S: O que se perde? -> A reconexão automática do EventSource; fizemos com espera exponencial até 30 s.
+D: Mostre `headers` no código e na aba Rede.
+
+=== rt-queda | Comunicação em tempo real | média
+P: O que acontece se a internet de um jogador cair no meio da partida?
+Q: Recuperação e consistência.
+O: O cliente tenta reconectar com espera crescente. Ao voltar, recarrega tudo que estava assinando, então não importa quantos avisos perdeu. A partida continua e o cronômetro do servidor não para.
+E: O servidor percebe o fechamento da conexão e marca offline quando era a última. Ações tentadas sem rede falham com `SEM_CONEXAO` e não são reenviadas.
+C: js/nucleo/TempoReal.js :: #processar(bloco) ;; backend/src/services/presenca.js :: export async function avisarPresenca
+S: Reconecta com token expirado? -> Em 401 ou 403 para de tentar.
+D: DevTools em modo offline e volte.
+
+=== chat-fluxo | Chat | alta
+P: Expliquem o caminho de uma mensagem, do teclado até a tela do colega.
+Q: Domínio de um fluxo completo.
+O: O formulário captura o envio e chama `ServicoChat`, que faz um POST. O servidor confere se sou membro, aplica limites, grava e avisa os membros por SSE. O colega recebe o aviso, faz um GET e desenha a lista.
+E: Ver o [diagrama](diagramas.html#seq-chat). São três requisições: POST do autor, aviso no fluxo aberto e GET de cada destinatário.
+C: js/servicos/ServicoChat.js :: observar(idGrupo, aoAtualizar ;; backend/src/services/chat.js :: export async function enviarMensagem
+S: O autor também recebe aviso? -> Sim, ele é membro e recarrega a lista.
+S: Por que não mandar o texto no aviso? -> Mantém uma única fonte, a API, com autorização a cada leitura.
+D: Duas janelas e aba Rede.
+
+=== chat-isolamento | Chat | alta
+P: Como o servidor sabe a quem entregar e impede mensagem em grupo errado?
+Q: Destinatários e autorização.
+O: O grupo vem da URL, mas só aceitamos se o usuário do token for membro. Os avisos vão para os ids em `members`, cada um ligado às suas conexões abertas. O autor vem do token, não do corpo.
+E: Não há salas de rede: o `Map` é por usuário. Removido o membro, ele some da lista na hora.
+C: backend/src/services/grupos.js :: export function avisarGrupo ;; backend/src/services/tempoReal.js :: notificar(uids, canal)
+S: Posso me passar por outro? -> Não sem o token dele.
+D: Envio por não membro: 403.
+
+=== chat-limite | Chat | média | dificil
+P: O limite de mensagens funciona contra um script?
+Q: Condição de corrida.
+O: Não totalmente. O serviço consulta a última mensagem e conta antes de inserir; pedidos simultâneos passam pela checagem juntos. Em teste, oito simultâneas foram aceitas. A correção é um contador atualizado atomicamente.
+E: É o padrão "verificar e depois agir". Já nas vagas e enigmas usamos condição dentro da escrita, que é a solução que falta aqui.
+C: backend/src/services/chat.js :: export async function enviarMensagem
+S: Existe outra barreira? -> O limite geral de 600 requisições por 5 minutos por IP.
+D: Explique no código as linhas entre `findOne` e `insertOne`.
+
+=== pyo-oque | Pyodide | alta
+P: O que é Pyodide e por que escolheram?
+Q: Decisão central do projeto.
+O: É o interpretador Python compilado para WebAssembly. Permite rodar o código do aluno no navegador sem instalar nada e sem executar código desconhecido no nosso servidor. Custa um download inicial e o resultado não é confiável para o servidor.
+E: Versão 0.26.4, carregada do jsDelivr por `importScripts`. A primeira carga é lenta; há limite de 90 s. O carregamento é antecipado quando a partida começa.
+C: js/nucleo/PyodideWorker.js :: 1-4 ;; js/servicos/GerenciadorEnigmas.js :: preparar()
+S: Funciona offline? -> Não necessariamente: depende de o arquivo estar em cache.
+D: Aba Rede na primeira execução.
+
+=== pyo-seguro | Pyodide | alta | dificil
+P: Executar código do usuário no navegador é seguro?
+Q: Não aceitar "é uma sandbox" sem ressalvas.
+O: É seguro para o servidor, porque nada roda lá. No navegador, o Worker não acessa a tela nem o localStorage e é encerrado após 6 segundos, mas não é um isolamento completo: o Python pode usar a rede do navegador e consumir memória.
+E: O Pyodide expõe o objeto JavaScript pelo módulo `js`. Cada pessoa executa apenas o próprio código; código de colegas não é compartilhado. Não há limite de memória nem CSP.
+C: js/nucleo/ExecutorPython.js :: async executar( ;; js/nucleo/PyodideWorker.js :: self.onmessage
+S: Alguém pode atacar outro jogador por aí? -> Não identificamos caminho: o código não é enviado a terceiros.
+D: Execute `while True: pass` e mostre o encerramento.
+
+=== pyo-servidor | Pyodide | média
+P: Qual a diferença entre executar no navegador e no servidor? Quando mudariam?
+Q: Trade-off arquitetural.
+O: No navegador é barato, escala sozinho e protege o servidor, mas o resultado pode ser forjado. No servidor o resultado é confiável, mas exige isolamento forte, limites de recursos e custo. Mudaríamos se a nota ou um ranking dependessem do resultado.
+E: Um meio-termo é manter a execução no cliente para retorno rápido e fazer o servidor verificar a resposta final.
+C: js/servicos/GerenciadorEnigmas.js :: async validar(enigma
+S: Bastaria usar um processo Python no Node? -> Não sem sandbox: seria execução remota de código.
+D: Mostre que a requisição final não leva o código.
+
+=== wk-porque | Web Workers | alta
+P: Por que usar um Web Worker?
+Q: Threads no navegador.
+O: Para o Python rodar em outra thread. Um laço infinito não congela a tela, e a thread principal consegue encerrar o Worker quando o tempo acaba.
+E: A thread principal não consegue interromper código síncrono que está nela mesma. `terminate()` destrói a thread; a próxima execução cria outra e recarrega o Pyodide.
+C: js/nucleo/ExecutorPython.js :: preparar() { ;; js/nucleo/ExecutorPython.js :: #descartar() {
+S: O Worker acessa o DOM? -> Não.
+D: Laço infinito e clique em outro botão da tela.
+
+=== wk-mensagens | Web Workers | alta | dificil
+P: Como as duas threads trocam dados e como sabem qual resposta é de qual pedido?
+Q: Protocolo de mensagens.
+O: Com `postMessage` e o evento `message`. Os dados são copiados. Cada pedido tem um `id`; só aceitamos a resposta com o mesmo id e removemos o ouvinte depois.
+E: Mensagens: `pronto`, `falha` e `resultado`. Embrulhamos o protocolo em uma Promise com `setTimeout`. Ela sempre resolve, com `fase` indicando o problema, para a tela tratar de um só jeito.
+C: js/nucleo/ExecutorPython.js :: async executar( ;; js/nucleo/PyodideWorker.js :: self.onmessage
+S: Por que o Worker é clássico e não módulo? -> Para usar `importScripts` e carregar o Pyodide do CDN.
+D: Coloque um breakpoint no `aoMensagem`.
+
+=== reg-ciclo | Regras de negócio | alta
+P: Quais são os estados da partida e quem pode mudar cada um?
+Q: Máquina de estados.
+O: Esperando, jogando e três finais: concluída, desistida ou expirada. Só o dono cria, inicia e desiste. Membros entram no lobby. Quem joga registra pistas e enigmas. Qualquer membro pode registrar a expiração depois do prazo.
+E: O front tem a tabela de transições; o servidor garante cada uma com o filtro `status` na escrita. A partida DEMO permite que qualquer admin conduza.
+C: js/modelos/EstadoPartida.js :: static TRANSICOES ;; backend/src/services/partidas.js :: export async function encerrarPartida
+S: Posso apagar uma partida em andamento? -> Não, a API responde 409; antes é preciso encerrar. Excluir o grupo remove.
+D: Teste "ordem do ciclo de vida é respeitada".
+
+=== reg-limites | Regras de negócio | média
+P: Quantos participam e o que mais é limitado?
+Q: Se conhecem os números e onde estão.
+O: Grupo com até 4; partida com até 3. Fácil 25 minutos e 3 enigmas, médio 45 e 4, difícil 60 e 5. Chat de 300 caracteres, intervalo de 2 s; um grupo novo a cada 30 s; até 3 dicas por enigma.
+E: As constantes estão no servidor e repetidas no front. Há risco de divergirem se só um lado mudar.
+C: backend/src/services/partidas.js :: export const DIFICULDADES ;; backend/src/services/grupos.js :: export const MAX_INTEGRANTES ;; backend/src/utils/validacao.js :: export const LIMITES
+S: O quarto integrante faz o quê? -> Acompanha como observador e usa o chat.
+D: Tente entrar como quarto jogador.
+
+=== reg-pontuacao | Regras de negócio | alta | dificil
+P: Como a pontuação é calculada e em que se baseiam esses valores?
+Q: Embasamento, cobrado em outro projeto.
+O: 200 por enigma, mais bônus pelo tempo restante, menos 40 por dica e 10 por tentativa errada, entre 0 e 5000. Os valores são uma decisão de projeto para valorizar acerto, rapidez e autonomia; não temos estudo que os fundamente.
+E: Bônus por segundo: 0,15, 0,10 e 0,08. Se a equipe tiver referência de gamificação ou testes com usuários, citem; não inventem.
+C: backend/src/services/pontuacao.js :: export function calcularPontuacao
+S: Quanto vale uma partida fácil terminada na hora? -> Sem dicas e com quase 25 minutos restantes, cerca de 824.
+S: Partida não concluída pontua? -> No histórico, a pontuação fica nula.
+D: Calcule no quadro e compare com o documento.
+
+=== reg-tempo | Regras de negócio | alta
+P: Se eu mudar o relógio do computador, ganho mais tempo?
+Q: Autoridade sobre o tempo.
+O: Não. O servidor grava o início e o fim e recusa progresso depois do prazo. O relógio local só afeta o que é mostrado, e mesmo isso é compensado consultando a hora do servidor.
+E: O filtro de escrita usa `expiresAt > new Date()` do servidor. Não há agendador: a expiração é registrada quando um cliente pede.
+C: backend/src/services/partidas.js :: function filtroEmAndamento ;; js/servicos/ServicoPartida.js :: async deslocamentoMs()
+S: E se todos fecharem o navegador? -> O documento fica em andamento até alguém abrir; estatísticas o tratam como expirado.
+D: Altere o relógio e tente registrar após o prazo (teste automatizado cobre).
+
+=== reg-gerador | Regras de negócio | média | dificil
+P: Como garantem que a sala sorteada tem solução?
+Q: Correção de algoritmo.
+O: O gerador simula um jogador que resolve tudo o que está liberado até não haver progresso. Se não chega a todos os enigmas, tenta outra derivação da semente, até 25 vezes.
+E: Também confere objetos repetidos, objetos alcançáveis e dependências. Essa garantia está no cliente do dono; o servidor só confere a estrutura.
+C: js/nucleo/GeradorProcedural.js :: static gerar( ;; js/nucleo/GeradorProcedural.js :: static #simular ;; backend/src/services/partidas.js :: export function validarConfig
+S: O que muda por dificuldade? -> Acessibilidade dos objetos, quantidade de pistas e dependência entre enigmas.
+D: Mostre a semente no lobby.
+
+=== reg-entradas | Regras de negócio | média
+P: O que acontece com valores negativos ou absurdos?
+Q: Teste exploratório típico da banca.
+O: O servidor recusa. Dicas aceitam de 0 a 3, tentativas de 0 a 1000, semente inteira não negativa; nome e mensagem têm tamanho limitado.
+E: `inteiro` exige número inteiro de fato: texto "5" é recusado.
+C: backend/src/utils/validacao.js :: export function inteiro ;; backend/src/services/partidas.js :: const dicas = inteiro
+S: Há teste para isso? -> Sim, "desafio com dicas ou tentativas inválidas é recusado".
+D: Rode `node --test test/historico.test.js`.
+
+=== tes-oque | Testes | alta
+P: Que testes vocês têm? Executem agora.
+Q: Prova real, não definição.
+O: 109 testes de integração com o executor nativo do Node. Eles sobem a API de verdade com um MongoDB em memória, fazem requisições HTTP e conferem status, código de erro e efeito no banco. E-mail, Google e Firebase são substituídos.
+E: Executados um arquivo por vez; cerca de 93 s. Ver [comandos](testes.html#comandos).
+C: backend/package.json :: "test": ;; backend/test/ajuda.js :: export async function criarAmbiente
+S: Usam o banco de produção? -> Não, nem precisam de `.env`.
+D: `npm test` na pasta `backend`.
+
+=== tes-unitario | Testes | alta | dificil
+P: Onde estão os testes unitários?
+Q: No simpósio foi tratado como obrigatório.
+O: Respondam conforme a situação do dia. Hoje a branch principal tem só integração. Temos 64 testes unitários numa versão local anterior, que também passam no código atual; precisam ser incorporados ao repositório.
+E: Eles cobrem validação, erros, middlewares, tokens, salas e regras do jogo, com `mock.fn()` no lugar do banco. Se forem incorporados antes da banca, atualizem esta resposta.
+C: backend/package.json :: "scripts"
+S: Diferença entre unitário e integração? -> Unitário isola uma função; integração confirma as peças juntas.
+D: Rodar `node --test test/unidade/` depois de copiar a pasta.
+
+=== tes-auth | Testes | alta
+P: Mostrem o teste da autenticação e expliquem o que ele verifica.
+Q: Pedido literal feito no simpósio.
+O: Em `autenticacao.test.js` há o teste de rota protegida: sem token e com token inválido esperamos 401, e com token válido, acesso. Outros verificam mensagem genérica, 2FA, limite de tentativas e revogação na troca de senha.
+E: Cada teste faz requisições reais e usa `assert.equal` no status e no código.
+C: backend/test/autenticacao.test.js :: test("rota protegida: token ausente ;; backend/test/autenticacao.test.js :: test("redefine a senha uma
+S: Como simulam o e-mail? -> O `ctx.email` falso guarda as mensagens e o teste extrai o token do link.
+D: `node --test --test-name-pattern="rota protegida" test/autenticacao.test.js`
+
+=== tes-lacunas | Testes | média | dificil
+P: O que os testes não garantem?
+Q: Maturidade sobre cobertura.
+O: Não cobrem interface, Pyodide, concorrência do chat, falsificação de progresso, serviços reais nem deploy. Passar em todos não significa sem falhas: encontramos limitações que nenhum teste pegava.
+E: Não medimos cobertura de código. Ver [lacunas](testes.html#cobertura).
+C: backend/test/ajuda.js :: criarAmbiente({ google
+S: Como testariam a interface? -> Com testes ponta a ponta em navegador automatizado.
+D: Cite um item e o teste que escreveriam.
+
+=== dep-render | Deploy | média
+P: Como é feito o deploy?
+Q: Configuração e ambientes.
+O: A API é descrita no `render.yaml`: pasta backend, `npm ci --omit=dev`, `npm start` e health check. Os segredos são cadastrados no painel. O front é estático e pode ficar no Firebase Hosting. O banco é o Atlas.
+E: `js/config.js` escolhe a API local ou a publicada pelo domínio. O `firebase.json` exclui o backend da publicação. Este guia não verificou o ambiente publicado.
+C: render.yaml :: 3-12 ;; js/config.js :: 3-7 ;; firebase.json
+S: Por que liberar 0.0.0.0/0 no Atlas? -> O plano gratuito do Render não tem IP fixo; a proteção fica na credencial. É um risco assumido.
+D: Abra `/api/health`.
+
+=== dep-saude | Deploy | baixa
+P: Para que serve a rota de health check?
+Q: Operação.
+O: Ela faz um ping no banco e responde 200 ou 503. O Render usa para saber se o serviço está saudável.
+E: Sem o ping, a API pareceria saudável mesmo sem banco.
+C: backend/src/controllers/sistemaController.js :: export async function saude
+S: E ao desligar o servidor? -> `SIGTERM` encerra o tempo real, o servidor HTTP e a conexão do banco.
+D: Chame a rota.
+
+=== dep-hiberna | Deploy | média
+P: Quais limitações a hospedagem impõe?
+Q: Consciência operacional.
+O: O plano gratuito hiberna sem uso e o primeiro acesso pode demorar perto de um minuto; bloqueia SMTP; e usamos uma instância por causa do tempo real em memória.
+E: Os dois primeiros pontos estão documentados no README. Acordem o serviço antes da apresentação.
+C: render.yaml :: plan: free ;; js/paginas/Pagina.js :: async iniciar()
+S: O jogo perde dados quando hiberna? -> Não; os dados estão no Atlas.
+D: Mostre a mensagem de falha de conexão.
+
+=== dec-escape | Decisões técnicas | média
+P: Por que um Escape Room para ensinar Python, e para quem?
+Q: Coerência entre problema, público e solução.
+O: Para estudantes iniciantes: o enigma dá contexto ao exercício, o grupo estimula colaboração e o retorno é imediato. É apoio à prática, não substitui o ensino.
+E: Alinhem com a monografia: público, objetivos e como pretendem avaliar usabilidade. O código não comprova ganho de aprendizagem.
+C: js/modelos/Dificuldade.js :: static NIVEIS
+S: Mediram aprendizado? -> Respondam o que foi realmente feito; não há dados no repositório.
+D: Mostre os conceitos por dificuldade.
+
+=== dec-vanilla | Decisões técnicas | média
+P: Por que JavaScript puro, sem React, e Node no servidor?
+Q: Justificativa e custo.
+O: Mesmo idioma nas duas pontas, sem etapa de build no front e menos dependências. Organizamos em classes por página, componente, serviço e modelo. O custo é atualizar o DOM manualmente.
+E: Algumas regras são duplicadas (pontuação e limites) porque não há pacote compartilhado.
+C: js/main.js :: static PAGINAS ;; js/modelos/Pontuacao.js :: static calcular
+S: Quando um framework valeria a pena? -> Com muito estado compartilhado entre telas.
+D: Mostre a estrutura de pastas.
+
+=== dec-legado | Decisões técnicas | alta | dificil
+P: Achei arquivos de Firebase no repositório. Ainda usam? Por que estão aí?
+Q: Código morto, criticado no simpósio.
+O: São da versão anterior e nenhuma página os carrega. A única dependência viva é no back-end, para migrar contas antigas. Deveriam ser removidos; o README já os identifica.
+E: Todas as páginas carregam apenas `js/main.js`. Os soltos em `js/` importam o SDK do Firebase. As regras ficam porque o projeto antigo continua ativo.
+C: js/firebase.js :: 1-8 ;; js/main.js :: export class Aplicacao ;; backend/src/services/firebaseLegado.js :: export function criarFirebaseLegado
+S: Por que migrar contas em vez de pedir novo cadastro? -> Para preservar o acesso; a senha é conferida uma vez no Firebase e convertida em hash próprio.
+D: Mostre a tag `script` de um HTML.
+
+=== dec-responsivo | Decisões técnicas | média
+P: A aplicação funciona no celular? Reduzam a janela.
+Q: Teste visual feito ao vivo no simpósio.
+O: Há grid responsivo e media queries; a sala passa para uma coluna em telas menores. Demonstrem apenas o que testaram antes.
+E: Este guia não testou a interface do jogo em celular. Testem sala, mapa e editor de código.
+C: css/sala.css :: @media
+S: O editor de Python é confortável no celular? -> É uma área de texto simples; digitação em celular é limitada.
+D: Modo dispositivo do DevTools.
+
+=== dec-autoria | Decisões técnicas | média | dificil
+P: Escolho um trecho aleatório do código. Expliquem linha por linha.
+Q: Autoria e domínio, inclusive se houve uso de ferramentas de geração.
+O: Digam o objetivo do arquivo, as entradas, as decisões e o que devolve. Se usaram ferramentas de apoio, sejam transparentes conforme as regras do curso.
+E: Treinem os quatro trechos mais ricos: registrar enigma, middleware de autenticação, `Api.requisitar` e o executor Python.
+C: backend/src/services/partidas.js :: export async function registrarEnigma ;; js/nucleo/Api.js :: static async requisitar
+S: O que mudariam hoje? -> Validação do progresso no servidor, testes unitários no repositório e limpeza do legado.
+D: Sorteiem um trecho entre vocês.
