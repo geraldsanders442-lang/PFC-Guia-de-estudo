@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f5f1">
+<title>Testes e demonstração · Escape.py</title>
+<link rel="stylesheet" href="assets/guia.css">
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar" aria-label="Navegação do guia">
+  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">E</span><span><strong>Escape.py</strong><small>Guia de estudos do projeto</small></span></a>
+  <label class="small" for="busca" style="display:block;margin-top:14px">Buscar em todo o guia</label>
+  <input id="busca" class="nav-search" type="search" placeholder="Ex.: JWT, gameHistory, SSE…" autocomplete="off">
+  <div id="achados" hidden></div>
+  <nav id="navegacao">
+    <div class="nav-group"><p class="nav-title">Páginas</p><div class="nav-list paginas"><a href="index.html"><b>Guia base</b><small>Fundamentos e visão geral</small></a><a href="codigo.html"><b>Código por funcionalidade</b><small>Do clique ao resultado</small></a><a href="api-banco.html"><b>API, middlewares e banco</b><small>Endpoints, cadeia e MongoDB</small></a><a href="diagramas.html"><b>Diagramas e fluxos</b><small>Arquitetura e sequências</small></a><a href="seguranca.html"><b>Segurança, LGPD e limites</b><small>Ameaças, provas e lacunas</small></a><a href="testes.html" class=atual aria-current=page><b>Testes e demonstração</b><small>Comandos e roteiro ao vivo</small></a><a href="simposio.html"><b>O que a banca cobrou</b><small>Análise do simpósio</small></a><a href="simulado.html"><b>Simulado da banca</b><small>Perguntas e respostas</small></a></div></div>
+    <div class="nav-group"><p class="nav-title">Nesta página</p><div class="nav-list" id="locais"><a href="#situacao">Situação real</a><a href="#config">Framework e configuração</a><a href="#comandos">Roteiro de execução</a><a href="#cobertura">O que é testado e o que não é</a><a href="#unitarios">Fundamentos e testes unitários locais</a><a href="#manual">Roteiro de demonstração ao vivo</a></div></div>
+  </nav>
+  <div class="side-foot">Baseado no código do repositório Escape-Room-PFC, branch main, commit <a href="https://github.com/pfcumc2026/Escape-Room-PFC/tree/37cd1d6393ed8550972f173e519ec6925c65aec6">37cd1d6</a> (18/11/2026).</div>
+</aside>
+<main class="main" id="inicio">
+  <header class="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="menu-button" id="menu-toggle" aria-label="Abrir navegação" aria-expanded="false">☰</button><span class="crumb">Guia para a banca / Testes e demonstração</span></div><div class="top-actions"><button class="icon-button" id="tema-toggle" type="button" aria-label="Alternar tema">Tema: claro</button><button class="icon-button" id="imprimir" type="button">Imprimir / PDF</button></div></header>
+  <article class="content">
+<header class="intro"><span class="eyebrow">Preparação para a banca</span><h1>Testes e demonstração</h1><p>O que existe de verdade, como executar, como ler o resultado e o roteiro ao vivo.</p></header>
+
+<section class="section" id="situacao" data-title="Situação real"><div class="section-head"><span class="section-number">01</span><div><h2>Situação real</h2><p class="lede">Números obtidos executando os comandos em 26/11/2026.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Conjunto</th><th>Onde está</th><th>Resultado</th></tr></thead><tbody><tr><td>Integração da API</td><td><code>backend/test/</code> no GitHub (main)</td><td><strong>109 testes, 109 aprovados</strong>, cerca de 93 s</td></tr><tr><td>Unitários</td><td><code>versao-1-etapa1/backend/test/unidade/</code> (<strong>só na máquina local</strong>)</td><td>64 aprovados em 1,3 s também contra o código atual</td></tr><tr><td>Interface / ponta a ponta</td><td>não existe</td><td>testes manuais</td></tr><tr><td>Carga</td><td>não existe</td><td>—</td></tr><tr><td>Integração contínua</td><td>não há pasta <code>.github</code></td><td>execução manual</td></tr></tbody></table></div>
+<div class="note alerta">No simpósio um professor afirmou que testes unitários são obrigatórios. Hoje a branch <code>main</code> <strong>não</strong> tem a pasta <code>test/unidade</code> nem o script <code>test:unidade</code>. Decidam antes da banca se vão incorporar os arquivos. Até lá, não digam que &quot;estão no repositório&quot;.</div>
+<div class="note">O README informa 104 testes; a execução atual conta 109. Falem o número que o terminal mostrar.</div></section>
+<section class="section" id="config" data-title="Framework e configuração"><div class="section-head"><span class="section-number">02</span><div><h2>Framework e configuração</h2><p class="lede">Nada além do Node.js e um MongoDB temporário.</p></div></div>
+<ul><li>Executor: <code>node:test</code>. Asserções: <code>node:assert/strict</code>.</li><li>Banco: <code>mongodb-memory-server</code> (MongoDB real, temporário). Na primeira vez baixa o binário.</li><li>Script: <code>node --test --test-concurrency=1 test/</code> (um arquivo por vez).</li><li>E-mail: objeto falso que guarda as mensagens. Google e Firebase: dublês passados no <code>ctx</code>.</li><li>Não é preciso <code>.env</code> nem Atlas.</li></ul>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/test/ajuda.js#L11-L77" target="_blank" rel="noopener">backend/test/ajuda.js · linhas 11–77</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">11</span>export async function criarAmbiente({ google = null, legado = null, limites = { autenticacao: 1000, geral: 10000 } } = {}) {
+<span class="ln">12</span>  const mongo = await MongoMemoryServer.create();
+<span class="ln">13</span>  const conexao = await conectar({ uri: mongo.getUri(), banco: &quot;teste&quot; });
+<span class="ln">14</span>  await criarIndices(conexao.db);
+<span class="ln">15</span>
+<span class="ln">16</span>  const emails = [];
+<span class="ln">17</span>  const ctx = {
+<span class="ln">18</span>    config: {
+<span class="ln">19</span>      producao: false,
+<span class="ln">20</span>      origens: [ORIGEM],
+<span class="ln">21</span>      frontendUrl: ORIGEM,
+<span class="ln">22</span>      jwt: { segredo: crypto.randomBytes(32).toString(&quot;hex&quot;), validade: &quot;1h&quot; },
+<span class="ln">23</span>      chaveTotp: crypto.randomBytes(32)
+<span class="ln">24</span>    },
+<span class="ln">25</span>    db: conexao.db,
+<span class="ln">26</span>    email: { configurado: true, async enviar(m) { emails.push(m); } },
+<span class="ln">27</span>    google,
+<span class="ln">28</span>    legado,
+<span class="ln">29</span>    tempoReal: criarTempoReal()
+<span class="ln">30</span>  };
+<span class="ln">31</span>
+<span class="ln">32</span>  const servidor = await new Promise((resolve) =&gt; {
+<span class="ln">33</span>    const s = criarApp(ctx, { limites }).listen(0, () =&gt; resolve(s));
+<span class="ln">34</span>  });
+<span class="ln">35</span>  const base = `http://127.0.0.1:${servidor.address().port}`;
+<span class="ln">36</span>
+<span class="ln">37</span>  async function api(metodo, caminho, { corpo, token, cabecalhos = {} } = {}) {
+<span class="ln">38</span>    const resposta = await fetch(`${base}${caminho}`, {
+<span class="ln">39</span>      method: metodo,
+<span class="ln">40</span>      redirect: &quot;manual&quot;,
+<span class="ln">41</span>      headers: {
+<span class="ln">42</span>        ...(corpo !== undefined ? { &quot;content-type&quot;: &quot;application/json&quot; } : {}),
+<span class="ln">43</span>        ...(token ? { authorization: `Bearer ${token}` } : {}),
+<span class="ln">44</span>        ...cabecalhos
+<span class="ln">45</span>      },
+<span class="ln">46</span>      body: corpo !== undefined ? JSON.stringify(corpo) : undefined
+<span class="ln">47</span>    });
+<span class="ln">48</span>    const texto = await resposta.text();
+<span class="ln">49</span>    let dados = null;
+<span class="ln">50</span>    try { dados = texto ? JSON.parse(texto) : null; } catch { dados = texto; }
+<span class="ln">51</span>    return { status: resposta.status, dados, cabecalhos: resposta.headers };
+<span class="ln">52</span>  }
+<span class="ln">53</span>
+<span class="ln">54</span>  function tokenDoUltimoEmail() {
+<span class="ln">55</span>    const ultimo = emails.at(-1);
+<span class="ln">56</span>    return decodeURIComponent(/token=([^\s&amp;&quot;]+)/.exec(ultimo.texto)[1]);
+<span class="ln">57</span>  }
+<span class="ln">58</span>
+<span class="ln">59</span>  // Conta pronta para jogar: cadastrada, com e-mail verificado e perfil completo
+<span class="ln">60</span>  async function criarJogador(username, { email = `${username}@teste.com`, senha = &quot;senha1234&quot; } = {}) {
+<span class="ln">61</span>    const cadastro = await api(&quot;POST&quot;, &quot;/api/auth/register&quot;, { corpo: { name: username, email, password: senha, acceptTerms: true } });
+<span class="ln">62</span>    await api(&quot;POST&quot;, &quot;/api/auth/email/verify&quot;, { corpo: { token: tokenDoUltimoEmail() } });
+<span class="ln">63</span>    const { dados } = await api(&quot;POST&quot;, &quot;/api/auth/login&quot;, { corpo: { email, password: senha } });
+<span class="ln">64</span>    await api(&quot;PATCH&quot;, &quot;/api/users/me&quot;, { token: dados.token, corpo: { username, avatarStyle: &quot;bottts&quot;, avatarSeed: &quot;abc&quot; } });
+<span class="ln">65</span>    return { token: dados.token, uid: cadastro.dados.usuario.uid, email, senha };
+<span class="ln">66</span>  }
+<span class="ln">67</span>
+<span class="ln">68</span>  async function encerrar() {
+<span class="ln">69</span>    ctx.tempoReal.encerrar();
+<span class="ln">70</span>    servidor.closeAllConnections?.();
+<span class="ln">71</span>    await new Promise((resolve) =&gt; servidor.close(resolve));
+<span class="ln">72</span>    await conexao.cliente.close();
+<span class="ln">73</span>    await mongo.stop();
+<span class="ln">74</span>  }
+<span class="ln">75</span>
+<span class="ln">76</span>  return { ctx, db: conexao.db, api, base, emails, tokenDoUltimoEmail, criarJogador, encerrar };
+<span class="ln">77</span>}</code></pre></div>
+<h3>Anatomia de um teste real</h3>
+<div class="codebox"><div class="code-label"><a href="https://github.com/pfcumc2026/Escape-Room-PFC/blob/37cd1d6393ed8550972f173e519ec6925c65aec6/backend/test/historico.test.js#L177-L194" target="_blank" rel="noopener">backend/test/historico.test.js · linhas 177–194</a></div><button class="copy" type="button">Copiar</button><pre><code><span class="ln">177</span>test(&quot;o score enviado pelo cliente é ignorado e o resultado é imutável&quot;, async () =&gt; {
+<span class="ln">178</span>  const gid = await novoGrupo(dono, &quot;Pontos&quot;);
+<span class="ln">179</span>  await prepararPartida(dono, gid);
+<span class="ln">180</span>  await resolverTudo(dono.token, gid, { hints: 2, attempts: 3, score: 5000 });
+<span class="ln">181</span>
+<span class="ln">182</span>  const jogo = await amb.db.collection(&quot;games&quot;).findOne({ _id: gid });
+<span class="ln">183</span>  const esperado = calcularPontuacao({
+<span class="ln">184</span>    dificuldade: &quot;facil&quot;, resolvidos: 3, dicas: 2, tentativas: 3, restanteMs: jogo.expiresAt - jogo.solved.pf.at
+<span class="ln">185</span>  });
+<span class="ln">186</span>  assert.equal(jogo.status, &quot;COMPLETED&quot;);
+<span class="ln">187</span>  assert.equal(jogo.score, esperado);
+<span class="ln">188</span>  assert.ok(jogo.score &lt; 5000);
+<span class="ln">189</span>
+<span class="ln">190</span>  const refeito = await post(`/api/games/${gid}/puzzles/pf`, dono.token, { hints: 0, attempts: 0, score: 5000 });
+<span class="ln">191</span>  assert.equal(refeito.status, 409);
+<span class="ln">192</span>  assert.equal((await amb.db.collection(&quot;games&quot;).findOne({ _id: gid })).score, esperado);
+<span class="ln">193</span>  assert.equal((await post(`/api/games/${gid}/puzzles/pf`, dono.token, { hints: 0, attempts: 0, score: 99999 })).status, 400);
+<span class="ln">194</span>});</code></pre></div>
+<p><strong>Preparar</strong> (grupo e partida), <strong>agir</strong> (resolver enviando <code>score: 5000</code>), <strong>verificar</strong> (o gravado é o valor calculado) e testar a <strong>falha</strong> (repetir dá 409; valor fora da faixa dá 400).</p></section>
+<section class="section" id="comandos" data-title="Roteiro de execução"><div class="section-head"><span class="section-number">03</span><div><h2>Roteiro de execução</h2><p class="lede">Em um terminal, dentro de <code>backend/</code> do repositório atual.</p></div></div>
+<div class="codebox"><div class="code-label">powershell</div><button class="copy" type="button">Copiar</button><pre><code>npm install</code></pre></div>
+<div class="codebox"><div class="code-label">powershell</div><button class="copy" type="button">Copiar</button><pre><code>npm test</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>Comando</th><th>Testes</th><th>O que verifica</th><th>Requisito</th></tr></thead><tbody><tr><td><code>node --test test/autenticacao.test.js</code></td><td>36</td><td>saúde, CORS, cadastro, e-mail, login, perfil, senha, 2FA, limite, auditoria</td><td>contas e segurança</td></tr><tr><td><code>node --test test/jogo.test.js</code></td><td>23</td><td>grupos, convites, chat, partida, salas, SSE, exclusão de conta</td><td>jogo colaborativo</td></tr><tr><td><code>node --test test/historico.test.js</code></td><td>20</td><td>sessão, transições, pontuação, histórico, índices, estatísticas</td><td>persistência e regras</td></tr><tr><td><code>node --test test/legado.test.js</code></td><td>13</td><td>migração do Firebase, 2FA antigo</td><td>continuidade de contas</td></tr><tr><td><code>node --test test/google.test.js</code></td><td>12</td><td><code>id_token</code>, PKCE, vínculo de contas</td><td>login Google</td></tr><tr><td><code>node --test test/demo.test.js</code></td><td>5</td><td>grupo DEMO e acesso de admin</td><td>controle de acesso</td></tr></tbody></table></div>
+<p>Para mostrar um grupo específico:</p>
+<div class="codebox"><div class="code-label">powershell</div><button class="copy" type="button">Copiar</button><pre><code>node --test --test-name-pattern=&quot;CORS&quot; test/autenticacao.test.js</code></pre></div>
+<h3>Como ler o resultado</h3>
+<ul><li><code>✔</code> passou; <code>✖</code> falhou. No fim: <code>tests</code>, <code>pass</code>, <code>fail</code>.</li><li>Em uma falha, leia o nome do teste, o <code>actual</code> × <code>expected</code> e a linha do arquivo indicada.</li><li>Falha antes de qualquer teste costuma ser o download do MongoDB (sem internet) ou Node antigo (<code>&gt;=20.19</code>).</li><li>A mensagem <code>[firebase-legado] INTERNAL</code> aparece de propósito: um teste simula a falha do serviço.</li></ul>
+<div class="table-wrap"><table><thead><tr><th>Se falhar</th><th>Provável significado</th></tr></thead><tbody><tr><td><code>autenticacao</code></td><td>quebrou cadastro, sessão, 2FA ou permissão</td></tr><tr><td><code>jogo</code> ou <code>historico</code></td><td>regra de partida, histórico ou isolamento</td></tr><tr><td><code>google</code> / <code>legado</code></td><td>validação de identidade externa</td></tr></tbody></table></div></section>
+<section class="section" id="cobertura" data-title="O que é testado e o que não é"><div class="section-head"><span class="section-number">04</span><div><h2>O que é testado e o que não é</h2><p class="lede">Para não prometer demais.</p></div></div>
+<p><strong>Coberto:</strong> respostas com status e código de erro, efeitos no banco, injeção de operador no cadastro, concorrência no cadastro, score ignorado, isolamento entre grupos, SSE.</p>
+<p><strong>Não coberto:</strong> interface, Pyodide e Worker, gerador procedural (só pelos unitários locais, em parte), <code>TempoReal.js</code> do cliente, limite do chat sob concorrência, falsificação de progresso, envio real de e-mail, Atlas, deploy, acessibilidade e responsividade.</p>
+<h3>Testes recomendados (ainda não implementados)</h3>
+<ol><li>Resolver enigma sem resposta correta deve ser recusado (hoje <strong>falharia</strong>).</li><li>Rajada de mensagens respeita o limite (hoje <strong>falharia</strong>).</li><li>Token após logout é recusado (hoje <strong>falharia</strong>).</li><li>Exclusão de conta não deixa o <code>uid</code> em <code>games</code> (hoje <strong>falharia</strong>).</li><li>Todo modelo de enigma: a solução de referência passa nos próprios testes.</li><li><code>GeradorProcedural</code> produz sala válida para muitas sementes.</li><li>Fluxo no navegador com duas sessões (Playwright, por exemplo).</li></ol></section>
+<section class="section" id="unitarios" data-title="Fundamentos e testes unitários locais"><div class="section-head"><span class="section-number">05</span><div><h2>Fundamentos e testes unitários locais</h2><p class="lede">Conceitos que a banca pode pedir, com exemplos da pasta local.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Tipo</th><th>O que verifica</th></tr></thead><tbody><tr><td>Unitário</td><td>uma função isolada, dependências substituídas</td></tr><tr><td>Integração</td><td>rotas + services + banco juntos</td></tr><tr><td>Ponta a ponta</td><td>o sistema pela interface</td></tr><tr><td>Regressão</td><td>o que funcionava continua funcionando</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Arquivo local em <code>test/unidade/</code></th><th>Unidade</th></tr></thead><tbody><tr><td><code>validacao.test.js</code></td><td><code>utils/validacao.js</code></td></tr><tr><td><code>erros.test.js</code></td><td>erros HTTP e <code>tratarErros</code></td></tr><tr><td><code>autenticacao.test.js</code></td><td>middlewares</td></tr><tr><td><code>tokensUsoUnico.test.js</code></td><td>tokens e hash</td></tr><tr><td><code>salas.test.js</code></td><td><code>services/salas.js</code> com banco falso (<code>mock.fn</code>)</td></tr><tr><td><code>jogo.test.js</code></td><td>pontuação, dificuldade, cronômetro (<code>mock.timers</code>), semente</td></tr></tbody></table></div>
+<div class="codebox"><div class="code-label">javascript</div><button class="copy" type="button">Copiar</button><pre><code>// padrão AAA: preparar, agir, verificar
+test(&quot;negativo: senha curta&quot;, () =&gt; {
+  assert.throws(() =&gt; validarSenha(&quot;a1&quot;), { codigo: &quot;SENHA_FRACA&quot; });
+});</code></pre></div>
+<p>Equivalências para quem estudou JUnit: <code>@Test</code> → <code>test()</code>; classe de teste → <code>describe()</code>; Mockito → <code>mock.fn()</code>; H2 → <code>mongodb-memory-server</code>; MockMvc → <code>fetch</code> na porta local. <strong>Dublê</strong> substitui uma dependência; no unitário ele permite conferir com que filtro o banco foi consultado.</p></section>
+<section class="section" id="manual" data-title="Roteiro de demonstração ao vivo"><div class="section-head"><span class="section-number">06</span><div><h2>Roteiro de demonstração ao vivo</h2><p class="lede">Preparem antes: duas contas verificadas, uma conta admin e dois navegadores (normal e anônimo).</p></div></div>
+<div class="note">Antes de tudo: abram <code>https://escape-py-api.onrender.com/api/health</code> alguns minutos antes (o plano gratuito hiberna) e confirmem o endereço real em <code>js/config.js</code>. Este guia não verificou o ambiente publicado.</div>
+<div class="table-wrap"><table><thead><tr><th>Cenário</th><th>Passos</th><th>Esperado</th><th>Prova</th></tr></thead><tbody><tr><td>Login inválido</td><td>senha errada</td><td>&quot;E-mail ou senha incorretos.&quot;</td><td>aba Rede: 401 <code>CREDENCIAIS_INVALIDAS</code></td></tr><tr><td>Aceite dos termos</td><td>cadastrar; abrir o Atlas</td><td>campos <code>termsVersion</code> e <code>termsAcceptedAt</code></td><td>documento em <code>users</code> e <code>auditLogs</code></td></tr><tr><td>Senha protegida</td><td>abrir o documento</td><td><code>$2b$12$...</code></td><td>Atlas</td></tr><tr><td>Confirmação de senha</td><td>digitar com maiúscula diferente</td><td>&quot;As senhas não coincidem.&quot;</td><td>tela</td></tr><tr><td>Rota protegida</td><td>abrir <code>.../api/groups</code> direto no navegador</td><td>401 <code>TOKEN_AUSENTE</code></td><td>resposta JSON</td></tr><tr><td>Área de admin</td><td>jogador abre <code>auditoria.html</code></td><td>volta ao dashboard; API 403</td><td>Rede</td></tr><tr><td>Outro grupo</td><td>usuário B pede <code>/api/groups/&lt;id de A&gt;</code></td><td>403 <code>NAO_MEMBRO</code></td><td>console</td></tr><tr><td>Chat</td><td>A envia; B vê sem recarregar</td><td>mensagem aparece</td><td>Rede de B: <code>events</code> e novo <code>GET messages</code></td></tr><tr><td>XSS</td><td>enviar <code>&lt;img src=x onerror=alert(1)&gt;</code></td><td>texto literal</td><td>tela</td></tr><tr><td>Entrada e saída</td><td>B fecha a aba</td><td>A vê B offline</td><td>tela do grupo</td></tr><tr><td>Partida</td><td>dono cria, B entra, dono inicia</td><td>os dois mudam de tela</td><td>duas janelas</td></tr><tr><td>Python</td><td>código errado, laço infinito, código certo</td><td>feedback, &quot;demorou demais&quot;, mecanismo abre</td><td>tela</td></tr><tr><td>Sincronização</td><td>B registra uma pista</td><td>caderno de A atualiza</td><td>duas janelas</td></tr><tr><td>Fim</td><td>resolver o final (grupo DEMO é o caminho curto)</td><td>painel de resultado</td><td>tela</td></tr><tr><td>Histórico</td><td>abrir dashboard e <code>gameHistory</code></td><td>números atualizados</td><td>Atlas</td></tr></tbody></table></div>
+<h3>Chamada pronta para o console (usuário B)</h3>
+<div class="codebox"><div class="code-label">javascript</div><button class="copy" type="button">Copiar</button><pre><code>await fetch(&quot;&lt;URL_DA_API&gt;/groups/&lt;ID_DO_GRUPO_DE_A&gt;&quot;, {
+  headers: { Authorization: &quot;Bearer &quot; + localStorage.getItem(&quot;escape-sessao&quot;) }
+}).then(r =&gt; r.json())</code></pre></div>
+<h3>Plano B</h3>
+<ul><li>Sem internet: rodar API e front localmente exige o Atlas; o <strong><code>npm test</code> funciona offline</strong> depois do primeiro download.</li><li>E-mail atrasado: usem contas já verificadas.</li><li>Evitem errar senha várias vezes: o limite é por IP.</li><li>Ensaiem com cronômetro: no simpósio houve desconto por apresentação abaixo do tempo mínimo.</li></ul></section>
+  </article>
+</main>
+</div>
+
+<script src="assets/busca.js"></script>
+<script src="assets/guia.js"></script>
+</body>
+</html>
